@@ -38,6 +38,8 @@ function App() {
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
   const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
+  const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
+  const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -55,16 +57,19 @@ function App() {
     };
   }, [activeTab]);
 
-  const handlePlayAyah = (surahNum, ayahNum) => {
+  const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
     // Jika ayat yang sama diklik saat sedang play, maka pause
     if (playingAyah === ayahNum && isPlayingAudio) {
       audioRef.current?.pause();
       setIsPlayingAudio(false);
       setPlayingAyah(null);
+      setIsAutoplay(false);
       return;
     }
 
     if (audioRef.current) audioRef.current.pause(); // Hentikan audio sebelumnya
+
+    setIsAutoplay(autoNext);
 
     // Format nomor menjadi 3 digit (contoh: Surah 1, Ayat 2 => 001002.mp3)
     const surahStr = String(surahNum).padStart(3, '0');
@@ -75,8 +80,25 @@ function App() {
     audioRef.current = newAudio;
     
     newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(ayahNum); };
-    newAudio.onended = () => { setIsPlayingAudio(false); setPlayingAyah(null); };
-    newAudio.onerror = () => { alert("Maaf, audio belum tersedia untuk ayat ini."); setIsPlayingAudio(false); setPlayingAyah(null); };
+    newAudio.onended = () => { 
+      if (autoNext) {
+        const currentList = playlistRef.current;
+        const currentIndex = currentList.findIndex(a => a.id === ayahNum);
+        if (currentIndex !== -1 && currentIndex + 1 < currentList.length) {
+          // Jika masih ada ayat selanjutnya, putar otomatis
+          handlePlayAyah(surahNum, currentList[currentIndex + 1].id, true);
+        } else {
+          setIsPlayingAudio(false);
+          setPlayingAyah(null);
+          setIsAutoplay(false);
+        }
+      } else {
+        setIsPlayingAudio(false); 
+        setPlayingAyah(null); 
+        setIsAutoplay(false);
+      }
+    };
+    newAudio.onerror = () => { alert("Maaf, audio belum tersedia untuk ayat ini."); setIsPlayingAudio(false); setPlayingAyah(null); setIsAutoplay(false); };
     
     newAudio.play();
   };
@@ -351,6 +373,7 @@ function App() {
         const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
         const { surah, surahNumber = 1, text, verses = 2 } = currentLearnData;
         const displayedText = text.filter(item => item.id >= ayahStart && item.id <= ayahEnd);
+        playlistRef.current = displayedText; // Simpan ke ref agar bisa dibaca saat putar otomatis
 
         return (
           <div className="p-4 pb-24 space-y-4">
@@ -384,10 +407,11 @@ function App() {
                   </p>
                 </div>
                 <button 
-                  onClick={() => displayedText.length > 0 && handlePlayAyah(surahNumber, displayedText[0].id)}
-                  className={`p-3 rounded-full transition-all ${isPlayingAudio ? 'bg-red-100 text-red-600 scale-110' : 'bg-green-600 text-white shadow-md'}`}
+                  onClick={() => displayedText.length > 0 && handlePlayAyah(surahNumber, displayedText[0].id, true)}
+                  className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${isAutoplay && isPlayingAudio ? 'bg-red-100 text-red-600 scale-105' : 'bg-green-600 text-white shadow-md hover:bg-green-700'}`}
                 >
-                  {isPlayingAudio ? <Pause size={24} /> : <Play size={24} />}
+                  {isAutoplay && isPlayingAudio ? <Pause size={18} /> : <Play size={18} />}
+                  {isAutoplay && isPlayingAudio ? 'Jeda' : 'Putar Semua'}
                 </button>
               </div>
               
@@ -399,11 +423,11 @@ function App() {
                     <input 
                       type="number" 
                       value={ayahStart} 
-                      onChange={(e) => setAyahStart(Number(e.target.value) || 1)}
+                      onChange={(e) => setAyahStart(e.target.value === '' ? '' : Number(e.target.value))}
                       onBlur={() => {
-                        let val = ayahStart;
-                        if (val < 1) val = 1;
-                        if (val > ayahEnd) val = ayahEnd;
+                        let val = Number(ayahStart);
+                        if (val < 1 || isNaN(val)) val = 1;
+                        if (val > Number(ayahEnd)) val = Number(ayahEnd);
                         setAyahStart(val);
                       }}
                       className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
@@ -412,11 +436,11 @@ function App() {
                     <input 
                       type="number" 
                       value={ayahEnd} 
-                      onChange={(e) => setAyahEnd(Number(e.target.value) || 1)}
+                      onChange={(e) => setAyahEnd(e.target.value === '' ? '' : Number(e.target.value))}
                       onBlur={() => {
-                        let val = ayahEnd;
-                        if (val > verses) val = verses;
-                        if (val < ayahStart) val = ayahStart;
+                        let val = Number(ayahEnd);
+                        if (val > verses || isNaN(val)) val = verses;
+                        if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
                         setAyahEnd(val);
                       }}
                       className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
