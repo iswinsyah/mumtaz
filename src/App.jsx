@@ -1,7 +1,7 @@
 // Komponen Utama Aplikasi At Tahfidz
 import React, { useState } from 'react';
 import { 
-  Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, 
+  Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List
 } from 'lucide-react';
@@ -26,6 +26,8 @@ function App() {
   const [selectedUstadz, setSelectedUstadz] = useState('Hamzah');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [quranView, setQuranView] = useState('surah'); // 'surah' atau 'juz'
+  const [searchQuery, setSearchQuery] = useState(''); // State pencarian
+  const [selectedLearnItem, setSelectedLearnItem] = useState(null); // Menyimpan surah/juz yang dipilih
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -38,12 +40,41 @@ function App() {
     startListening();
   };
 
+  const handleSelectSurah = (surah) => {
+    // Untuk demo, kita akan gunakan data dari MOCK_QURAN
+    // tapi mengganti judulnya sesuai surah yang diklik.
+    // Di aplikasi nyata, kita akan mengambil data ayat dari API.
+    setSelectedLearnItem({
+      type: 'surah',
+      data: {
+        ...MOCK_QURAN,
+        surah: surah.surahName,
+        ayat_range: `1-${surah.verses}`,
+      }
+    });
+    setActiveTab('learn');
+  };
+
+  const handleSelectJuz = (juz) => {
+    // Sama seperti surah, ini adalah placeholder untuk demo.
+    setSelectedLearnItem({
+      type: 'juz',
+      data: {
+        surah: juz.title,
+        ayat_range: `Halaman ${juz.page}`,
+        text: [{ id: 1, arabic: `Ini adalah konten untuk ${juz.title}.`, indo: "Konten ayat-ayat untuk juz ini akan ditambahkan segera."}]
+      }
+    });
+    setActiveTab('learn');
+  };
+
   const handleStopSetoran = () => {
     stopListening();
     setSessionState('processing');
     
-    // Gabungkan teks Arab asli dari MOCK_QURAN untuk dicocokkan
-    const targetText = MOCK_QURAN.text.map(t => t.arabic).join(" ");
+    // Gunakan data dari surah/juz yang sedang dipelajari
+    const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
+    const targetText = currentLearnData.text.map(t => t.arabic).join(" ");
     
     setTimeout(() => {
       // Hitung skor berdasarkan algoritma Levenshtein (Client-side AI)
@@ -125,20 +156,32 @@ function App() {
         );
 
       case 'learn':
+        // Jika belum ada surah/juz yang dipilih, tampilkan pesan.
+        // Namun, untuk menjaga fungsionalitas, kita fallback ke MOCK_QURAN jika diakses langsung.
+        const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
+        const { surah, ayat_range, text } = currentLearnData;
+
         return (
           <div className="p-4 pb-24 space-y-4">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold text-gray-800">Mode Belajar</h1>
               <div className="flex gap-2">
-                 <button className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold">Ubah Qari</button>
+                 <button 
+                   onClick={() => setActiveTab('quran')}
+                   className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold flex items-center gap-1"
+                 >
+                   <List size={14} /> Ganti Surah/Juz
+                 </button>
               </div>
             </div>
             
             <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm space-y-6">
               <div className="flex justify-between items-start border-b border-gray-100 pb-3">
                 <div>
-                  <h2 className="text-2xl font-black text-green-800">{MOCK_QURAN.surah}</h2>
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Target: Ayat {MOCK_QURAN.ayat_range}</p>
+                  <h2 className="text-2xl font-black text-green-800">{surah}</h2>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                    {selectedLearnItem?.type === 'juz' ? ayat_range : `Target: Ayat ${ayat_range}`}
+                  </p>
                 </div>
                 <button 
                   onClick={() => setIsPlayingAudio(!isPlayingAudio)}
@@ -149,7 +192,7 @@ function App() {
               </div>
               
               <div className="space-y-8 py-2">
-                {MOCK_QURAN.text.map(item => (
+                {text.map(item => (
                   <div key={item.id} className="space-y-3">
                     <p className="text-right text-3xl leading-relaxed font-serif text-gray-800" dir="rtl">
                       {item.arabic} <span className="text-green-600 font-sans text-xl">﴿{item.id}﴾</span>
@@ -242,20 +285,41 @@ function App() {
           };
         });
 
+        // Filter data berdasarkan input pencarian
+        const filteredSurah = quranData.filter(s => s.surahName.toLowerCase().includes(searchQuery.toLowerCase()));
+        const filteredJuz = juzList.filter(j => j.title.toLowerCase().includes(searchQuery.toLowerCase()) || (j.subtitle && j.subtitle.toLowerCase().includes(searchQuery.toLowerCase())));
+
         return (
           <div className="p-4 pb-24 space-y-4 flex flex-col h-full">
             <h1 className="text-xl font-bold text-gray-800">Al-Qur'an</h1>
             
+            {/* Kotak Pencarian */}
+            <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500 flex items-center gap-2 transition-all">
+              <div className="pl-2 text-gray-400"><Search size={18} /></div>
+              <input 
+                type="text" 
+                placeholder={quranView === 'surah' ? "Cari nama surah..." : "Cari juz..."}
+                className="w-full bg-transparent border-none outline-none text-sm py-1 text-gray-800 placeholder-gray-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="pr-2 text-gray-400 hover:text-red-500 transition-colors">
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
             {/* Toggle Switch */}
             <div className="flex bg-gray-200 p-1 rounded-xl">
               <button 
-                onClick={() => setQuranView('surah')}
+                onClick={() => { setQuranView('surah'); setSearchQuery(''); }}
                 className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${quranView === 'surah' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500'}`}
               >
                 Surah
               </button>
               <button 
-                onClick={() => setQuranView('juz')}
+                onClick={() => { setQuranView('juz'); setSearchQuery(''); }}
                 className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${quranView === 'juz' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500'}`}
               >
                 Juz
@@ -272,8 +336,13 @@ function App() {
               
               <div className="overflow-y-auto flex-1 p-2 space-y-1">
                 {quranView === 'surah' ? (
-                  quranData.map((surah) => (
-                    <div key={surah.surahNumber} className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group">
+                filteredSurah.length > 0 ? (
+                  filteredSurah.map((surah) => (
+                    <div 
+                      key={surah.surahNumber} 
+                      onClick={() => handleSelectSurah(surah)}
+                      className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-8 h-8 flex items-center justify-center bg-gray-100 group-hover:bg-green-100 text-gray-500 group-hover:text-green-700 font-bold rounded-lg text-xs transition-colors">
                           {surah.surahNumber}
@@ -290,8 +359,16 @@ function App() {
                     </div>
                   ))
                 ) : (
-                  juzList.map((juz) => (
-                    <div key={juz.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group">
+                  <div className="text-center py-10 text-gray-400 text-sm font-medium">Surah tidak ditemukan</div>
+                )
+                ) : (
+                filteredJuz.length > 0 ? (
+                  filteredJuz.map((juz) => (
+                    <div 
+                      key={juz.id} 
+                      onClick={() => handleSelectJuz(juz)}
+                      className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-8 h-8 flex items-center justify-center bg-gray-100 group-hover:bg-green-100 text-gray-500 group-hover:text-green-700 font-bold rounded-lg text-xs transition-colors">
                           {juz.id}
@@ -306,6 +383,9 @@ function App() {
                       </div>
                     </div>
                   ))
+                ) : (
+                  <div className="text-center py-10 text-gray-400 text-sm font-medium">Juz tidak ditemukan</div>
+                )
                 )}
               </div>
             </div>
@@ -392,8 +472,11 @@ function App() {
                 
                 <div className="text-center mt-12 space-y-1">
                   <p className="text-xl font-bold tracking-tight">AI Sedang Menyimak...</p>
-                  <p className="text-xs text-gray-400">Lantunkan {MOCK_QURAN.surah}: {MOCK_QURAN.ayat_range}</p>
-                  <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4">{transcript || "Menunggu suara..."}</p>
+                  <p className="text-xs text-gray-400">
+                    Lantunkan {selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}: 
+                    {selectedLearnItem ? selectedLearnItem.data.ayat_range : MOCK_QURAN.ayat_range}
+                  </p>
+                  <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4 h-4">{transcript || "Menunggu suara..."}</p>
                 </div>
 
                 <div className="absolute bottom-12 w-full px-8">
@@ -488,7 +571,7 @@ function App() {
              <div className="text-center space-y-3">
                 <div className="mx-auto w-24 h-24 bg-yellow-50 rounded-[2.5rem] flex items-center justify-center text-yellow-500 mb-2 rotate-3"><Heart size={48} fill="currentColor" /></div>
                 <h3 className="text-2xl font-black text-gray-800 tracking-tight">Wujudkan Rasa Syukur</h3>
-                <p className="text-sm text-gray-500 leading-relaxed px-4">Alhamdulillah, hafalanmu <b>{MOCK_QURAN.surah}</b> sangat lancar hari ini. Sempurnakan dengan sedekah?</p>
+                <p className="text-sm text-gray-500 leading-relaxed px-4">Alhamdulillah, hafalanmu <b>{selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}</b> sangat lancar hari ini. Sempurnakan dengan sedekah?</p>
              </div>
              <div className="grid grid-cols-1 gap-4 pt-2">
                 <button className="w-full bg-green-700 text-white py-5 rounded-[2rem] font-black text-lg shadow-xl shadow-green-100 flex items-center justify-center gap-3 hover:bg-green-800 transition-all"><DollarSign size={20} /> Sedekah Sekarang</button>
