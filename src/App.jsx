@@ -36,6 +36,7 @@ function App() {
   const [ayahStart, setAyahStart] = useState(1); // Filter ayat awal
   const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
+  const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -46,6 +47,9 @@ function App() {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel(); // Hentikan suara AI jika ganti tab
       }
     };
   }, [activeTab]);
@@ -99,6 +103,28 @@ function App() {
       // Fallback: Jika terblokir oleh keamanan browser, buka di tab baru agar bisa disave manual
       window.open(audioUrl, '_blank');
     }
+  };
+
+  // Fungsi untuk mengubah teks Saran Ustadz menjadi Suara (Gratis bawaan browser)
+  const handleSpeakNote = (text) => {
+    if (!window.speechSynthesis) {
+      alert("Maaf, browser perangkat ini belum mendukung fitur Suara AI.");
+      return;
+    }
+
+    if (isSpeakingNote) {
+      window.speechSynthesis.cancel(); // Stop jika sedang bicara
+      setIsSpeakingNote(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID'; // Bahasa Indonesia
+    utterance.rate = 0.9; // Diperlambat sedikit agar terdengar lebih jelas dan berwibawa
+    utterance.onstart = () => setIsSpeakingNote(true);
+    utterance.onend = () => setIsSpeakingNote(false);
+    utterance.onerror = () => setIsSpeakingNote(false);
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleStartSetoran = () => {
@@ -707,10 +733,13 @@ function App() {
                   </div>
 
                   <div className={`p-5 rounded-2xl ${getPredicate(score).bg} border border-white/50 space-y-2`}>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                       <Volume2 size={14} /> 
-                       Saran {selectedUstadz}
-                    </div>
+                    <button 
+                      onClick={() => handleSpeakNote(aiNote || getPredicate(score).note)}
+                      className={`mx-auto flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all bg-white/50 px-4 py-2 rounded-full shadow-sm ${isSpeakingNote ? 'text-green-700' : 'text-gray-600'}`}
+                    >
+                       {isSpeakingNote ? <Volume2 size={14} className="animate-pulse" /> : <Volume2 size={14} />} 
+                       {isSpeakingNote ? 'Ustadz Sedang Berbicara...' : `Dengarkan Saran ${selectedUstadz}`}
+                    </button>
                     <p className="text-sm italic font-medium text-gray-700 leading-relaxed">"{aiNote || getPredicate(score).note}"</p>
                   </div>
 
