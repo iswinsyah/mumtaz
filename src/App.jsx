@@ -1,7 +1,7 @@
 // Komponen Utama Aplikasi At Tahfidz
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download,
+  Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List
 } from 'lucide-react';
@@ -37,6 +37,7 @@ function App() {
   const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
+  const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -125,6 +126,20 @@ function App() {
     utterance.onend = () => setIsSpeakingNote(false);
     utterance.onerror = () => setIsSpeakingNote(false);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handleCopyResult = () => {
+    const predicate = getPredicate(score);
+    const noteText = aiNote || predicate.note;
+    const targetSurah = selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah;
+    const targetAyah = selectedLearnItem?.type === 'juz' ? selectedLearnItem.data.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`;
+    
+    const textToCopy = `📋 *Evaluasi Setoran At Tahfidz*\n📖 Surah: ${targetSurah} (${targetAyah})\n⭐ Nilai: ${score}/100 (${predicate.label})\n\n💡 *Saran Ustadz AI:*\n${noteText}`;
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Kembali ke ikon semula setelah 2 detik
+    });
   };
 
   const handleStartSetoran = () => {
@@ -740,10 +755,19 @@ function App() {
                        {isSpeakingNote ? <Volume2 size={14} className="animate-pulse" /> : <Volume2 size={14} />} 
                        {isSpeakingNote ? 'Ustadz Sedang Berbicara...' : `Dengarkan Saran ${selectedUstadz}`}
                     </button>
-                    <p className="text-sm italic font-medium text-gray-700 leading-relaxed">"{aiNote || getPredicate(score).note}"</p>
+                    <p className="text-sm italic font-medium text-gray-700 leading-relaxed select-text cursor-text">
+                      "{aiNote || getPredicate(score).note}"
+                    </p>
                   </div>
 
                   <div className="flex flex-col gap-3">
+                    <button 
+                      onClick={handleCopyResult} 
+                      className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isCopied ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                      {isCopied ? <Check size={18} /> : <Copy size={18} />}
+                      {isCopied ? 'Tersalin ke Clipboard!' : 'Salin Hasil Evaluasi'}
+                    </button>
                     <button onClick={() => setSessionState('idle')} className="w-full py-4 text-gray-400 font-bold text-sm">
                       Ulangi Setoran Ini
                     </button>
