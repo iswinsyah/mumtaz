@@ -13,6 +13,7 @@ const MOCK_QURAN = {
   surah: "Al-Mulk",
   surahNumber: 67,
   ayat_range: "1-2",
+  verses: 2,
   text: [
     { id: 1, arabic: "تَبَٰرَكَ ٱلَّذِى بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍ قَدِيرٌ", indo: "Mahasuci Allah yang menguasai kerajaan..." },
     { id: 2, arabic: "ٱلَّذِى خَلَقَ ٱلْمَوْتَ وَٱلْحَيَوٰةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ ٱلْعَزِيزُ ٱلْغَفُورُ", indo: "yang menciptakan mati dan hidup..." }
@@ -32,6 +33,8 @@ function App() {
   const [playingAyah, setPlayingAyah] = useState(null); // Ayat yang sedang diputar
   const [selectedLearnItem, setSelectedLearnItem] = useState(null); // Menyimpan surah/juz yang dipilih
   const [isLoadingLearnData, setIsLoadingLearnData] = useState(false); // Indikator loading saat ambil data
+  const [ayahStart, setAyahStart] = useState(1); // Filter ayat awal
+  const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -128,9 +131,14 @@ function App() {
           surah: surah.surahName,
           surahNumber: surah.surahNumber,
           ayat_range: `1-${surah.verses}`,
+          verses: surah.verses,
           text: formattedText
         }
       });
+      
+      // Set rentang ayat bawaan ke seluruh isi surah tersebut
+      setAyahStart(1);
+      setAyahEnd(surah.verses);
     } catch (err) {
       alert("Gagal mengambil data surah. Pastikan koneksi internet lancar.");
     } finally {
@@ -157,7 +165,9 @@ function App() {
     
     // Gunakan data dari surah/juz yang sedang dipelajari
     const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
-    const targetText = currentLearnData.text.map(t => t.arabic).join(" ");
+    const targetText = currentLearnData.text
+      .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
+      .map(t => t.arabic).join(" ");
     
     setTimeout(() => {
       // Hitung skor berdasarkan algoritma Levenshtein (Client-side AI)
@@ -252,7 +262,8 @@ function App() {
         }
 
         const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
-        const { surah, surahNumber = 1, ayat_range, text } = currentLearnData;
+        const { surah, surahNumber = 1, text, verses = 2 } = currentLearnData;
+        const displayedText = text.filter(item => item.id >= ayahStart && item.id <= ayahEnd);
 
         return (
           <div className="p-4 pb-24 space-y-4">
@@ -282,19 +293,53 @@ function App() {
                 <div>
                   <h2 className="text-2xl font-black text-green-800">{surah}</h2>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                    {selectedLearnItem?.type === 'juz' ? ayat_range : `Target: Ayat ${ayat_range}`}
+                    {selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Target: Ayat ${ayahStart}-${ayahEnd}`}
                   </p>
                 </div>
                 <button 
-                  onClick={() => text.length > 0 && handlePlayAyah(surahNumber, text[0].id)}
+                  onClick={() => displayedText.length > 0 && handlePlayAyah(surahNumber, displayedText[0].id)}
                   className={`p-3 rounded-full transition-all ${isPlayingAudio ? 'bg-red-100 text-red-600 scale-110' : 'bg-green-600 text-white shadow-md'}`}
                 >
                   {isPlayingAudio ? <Pause size={24} /> : <Play size={24} />}
                 </button>
               </div>
               
+              {/* Filter Rentang Ayat (Khusus Mode Surah) */}
+              {(!selectedLearnItem || selectedLearnItem.type === 'surah') && (
+                <div className="flex items-center justify-between bg-green-50/50 p-3 rounded-xl border border-green-100 mb-2">
+                  <span className="text-xs font-bold text-green-700 uppercase">Tampilkan Ayat:</span>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="number" 
+                      value={ayahStart} 
+                      onChange={(e) => setAyahStart(Number(e.target.value) || 1)}
+                      onBlur={() => {
+                        let val = ayahStart;
+                        if (val < 1) val = 1;
+                        if (val > ayahEnd) val = ayahEnd;
+                        setAyahStart(val);
+                      }}
+                      className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
+                    />
+                    <span className="text-xs text-green-600 font-bold">s/d</span>
+                    <input 
+                      type="number" 
+                      value={ayahEnd} 
+                      onChange={(e) => setAyahEnd(Number(e.target.value) || 1)}
+                      onBlur={() => {
+                        let val = ayahEnd;
+                        if (val > verses) val = verses;
+                        if (val < ayahStart) val = ayahStart;
+                        setAyahEnd(val);
+                      }}
+                      className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-8 py-2">
-                {text.map(item => (
+                {displayedText.map(item => (
                   <div 
                     key={item.id} 
                     onClick={() => handlePlayAyah(surahNumber, item.id)}
@@ -588,7 +633,7 @@ function App() {
                   <p className="text-xl font-bold tracking-tight">AI Sedang Menyimak...</p>
                   <p className="text-xs text-gray-400">
                     Lantunkan {selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}: 
-                    {selectedLearnItem ? selectedLearnItem.data.ayat_range : MOCK_QURAN.ayat_range}
+                    {selectedLearnItem?.type === 'juz' ? selectedLearnItem.data.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`}
                   </p>
                   <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4 h-4">{transcript || "Menunggu suara..."}</p>
                 </div>
