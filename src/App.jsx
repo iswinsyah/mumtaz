@@ -35,6 +35,7 @@ function App() {
   const [isLoadingLearnData, setIsLoadingLearnData] = useState(false); // Indikator loading saat ambil data
   const [ayahStart, setAyahStart] = useState(1); // Filter ayat awal
   const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
+  const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -159,31 +160,51 @@ function App() {
     setActiveTab('learn');
   };
 
-  const handleStopSetoran = () => {
+  const handleStopSetoran = async () => {
     stopListening();
     setSessionState('processing');
-    
+    setAiNote('');
+
     // Gunakan data dari surah/juz yang sedang dipelajari
     const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
     const targetText = currentLearnData.text
       .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
       .map(t => t.arabic).join(" ");
-    
-    setTimeout(() => {
-      // Hitung skor berdasarkan algoritma Levenshtein (Client-side AI)
-      const calculatedScore = calculateTajwidScore(transcript, targetText);
-      
-      // Jika kosong/terlalu rendah karena mic kurang jelas, berikan toleransi minimal untuk demo
-      const finalScore = calculatedScore > 20 ? calculatedScore : Math.floor(Math.random() * (90 - 70 + 1) + 70); 
-      
-      setScore(finalScore);
+
+    // Jika mic tidak menangkap suara
+    if (!transcript || transcript.trim() === "") {
+      setScore(0);
+      setAiNote("Tidak ada suara yang terdeteksi. Pastikan mic berfungsi dan silakan coba lagi.");
       setSessionState('result');
-      
-      if (finalScore >= 95) {
+      return;
+    }
+
+    try {
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzLerX6dYlezsODXvL7nVlAhBptM8r0ncxLZCtMw3T4dhD_YfnGKhcDTZwQ7-Dpled4/exec";
+
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Wajib text/plain agar lolos CORS GAS
+        body: JSON.stringify({ targetText, transcript })
+      });
+
+      const result = await response.json();
+
+      setScore(result.score);
+      setAiNote(result.note);
+      setSessionState('result');
+
+      if (result.score >= 95) {
         setTimeout(() => setShowSedekah(true), 1500);
       }
-    }, 2000); // Simulasi waktu loading
+    } catch (err) {
+      // Fallback jika gagal konek ke GAS/Internet mati
+      setScore(70);
+      setAiNote("Koneksi ke Ustadz AI terputus. Silakan periksa jaringan internet bos.");
+      setSessionState('result');
+    }
   };
+
 
   const getPredicate = (s) => {
     if (!s) return { label: '', color: '', bg: '', note: '' };
@@ -683,7 +704,7 @@ function App() {
                        <Volume2 size={14} /> 
                        Saran {selectedUstadz}
                     </div>
-                    <p className="text-sm italic font-medium text-gray-700 leading-relaxed">"{getPredicate(score).note}"</p>
+                    <p className="text-sm italic font-medium text-gray-700 leading-relaxed">"{aiNote || getPredicate(score).note}"</p>
                   </div>
 
                   <div className="flex flex-col gap-3">
