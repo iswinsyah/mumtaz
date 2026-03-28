@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { 
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, 
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
-  ChevronRight, Volume2, MessageCircle, X
+  ChevronRight, Volume2, MessageCircle, X, List
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
+import { quranData } from './data/QuranData';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
@@ -24,6 +25,7 @@ function App() {
   const [showSedekah, setShowSedekah] = useState(false);
   const [selectedUstadz, setSelectedUstadz] = useState('Hamzah');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [quranView, setQuranView] = useState('surah'); // 'surah' atau 'juz'
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -224,6 +226,89 @@ function App() {
                   )}
                </div>
              ))}
+          </div>
+        );
+
+      case 'quran':
+        const juzList = Array.from({ length: 30 }, (_, i) => {
+          const juzNum = i + 1;
+          // Rumus standar halaman awal juz pada Al-Qur'an Pojok (Kemenag/Madinah)
+          const page = juzNum === 1 ? 1 : (juzNum - 1) * 20 + 2;
+          return {
+            id: juzNum,
+            title: `Juz ${juzNum}`,
+            subtitle: juzNum === 30 ? 'Juz Amma' : '',
+            page: page
+          };
+        });
+
+        return (
+          <div className="p-4 pb-24 space-y-4 flex flex-col h-full">
+            <h1 className="text-xl font-bold text-gray-800">Al-Qur'an</h1>
+            
+            {/* Toggle Switch */}
+            <div className="flex bg-gray-200 p-1 rounded-xl">
+              <button 
+                onClick={() => setQuranView('surah')}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${quranView === 'surah' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500'}`}
+              >
+                Surah
+              </button>
+              <button 
+                onClick={() => setQuranView('juz')}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${quranView === 'juz' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500'}`}
+              >
+                Juz
+              </button>
+            </div>
+
+            {/* List Content */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1 min-h-[400px]">
+              {/* Header List */}
+              <div className="flex justify-between items-center px-5 py-3 border-b border-gray-100 bg-gray-50">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{quranView === 'surah' ? 'Nama Surah' : 'Daftar Juz'}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Hal</span>
+              </div>
+              
+              <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                {quranView === 'surah' ? (
+                  quranData.map((surah) => (
+                    <div key={surah.surahNumber} className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 flex items-center justify-center bg-gray-100 group-hover:bg-green-100 text-gray-500 group-hover:text-green-700 font-bold rounded-lg text-xs transition-colors">
+                          {surah.surahNumber}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800 group-hover:text-green-800 transition-colors">{surah.surahName}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">Juz {surah.juz} • {surah.verses} Ayat</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {/* Gunakan data page, jika tidak ada (untuk juz selain 29/30) hitung manual halamannya */}
+                        <span className="text-sm font-black text-green-700">{surah.page || (surah.juz === 1 ? 1 : (surah.juz - 1) * 20 + 2)}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  juzList.map((juz) => (
+                    <div key={juz.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 flex items-center justify-center bg-gray-100 group-hover:bg-green-100 text-gray-500 group-hover:text-green-700 font-bold rounded-lg text-xs transition-colors">
+                          {juz.id}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800 group-hover:text-green-800 transition-colors">{juz.title}</p>
+                          {juz.subtitle && <p className="text-[10px] text-gray-400 font-medium">{juz.subtitle}</p>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-black text-green-700">{juz.page}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         );
 
@@ -431,9 +516,9 @@ function App() {
           </button>
         </div>
 
-        <button onClick={() => setActiveTab('juz')} className={`flex flex-col items-center transition-all ${activeTab === 'juz' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
-          <Award size={22} fill={activeTab === 'juz' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Ujian</span>
+        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
+          <List size={22} fill={activeTab === 'quran' ? "currentColor" : "none"} />
+          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Daftar Surah</span>
         </button>
         <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
           <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} />
