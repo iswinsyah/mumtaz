@@ -122,6 +122,23 @@ function App() {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'id-ID'; // Bahasa Indonesia
     utterance.rate = 0.9; // Diperlambat sedikit agar terdengar lebih jelas dan berwibawa
+
+    // Logika pemilihan suara Laki-laki (Hamzah) / Perempuan (Humairah)
+    const voices = window.speechSynthesis.getVoices();
+    const idVoices = voices.filter(v => v.lang.includes('id'));
+    
+    if (idVoices.length > 0) {
+      if (selectedUstadz === 'Hamzah') {
+        // Suara Laki-laki: Cari voice laki-laki OS, atau akali dengan pitch (nada) lebih rendah
+        utterance.voice = idVoices.find(v => v.name.toLowerCase().includes('male')) || idVoices[0];
+        utterance.pitch = 0.8; // Nada lebih berat dan berwibawa
+      } else {
+        // Suara Perempuan: Cari voice perempuan OS, atau akali dengan pitch (nada) lebih tinggi
+        utterance.voice = idVoices.find(v => v.name.toLowerCase().includes('female')) || idVoices[idVoices.length - 1];
+        utterance.pitch = 1.2; // Nada lebih lembut
+      }
+    }
+
     utterance.onstart = () => setIsSpeakingNote(true);
     utterance.onend = () => setIsSpeakingNote(false);
     utterance.onerror = () => setIsSpeakingNote(false);
@@ -227,7 +244,8 @@ function App() {
         method: 'POST',
         // Hapus headers sama sekali agar browser otomatis memakai standard text/plain murni
         // Ini ampuh 100% untuk menghindari blokir Preflight CORS dari sistem Google
-        body: JSON.stringify({ targetText, transcript })
+        // Kirim juga data ustadz yang terpilih ke GAS
+        body: JSON.stringify({ targetText, transcript, ustadz: selectedUstadz })
       });
 
       const textResponse = await response.text();
