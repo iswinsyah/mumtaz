@@ -898,11 +898,11 @@ function App() {
 
       {/* Bottom Navigation Bar */}
       <div className="h-24 bg-white/80 backdrop-blur-md border-t border-gray-100 flex justify-around items-center px-6 pb-6 relative z-50">
-        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center transition-all ${activeTab === 'home' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center transition-all ${activeTab === 'home' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Sosial</span>
         </button>
-        <button onClick={() => setActiveTab('learn')} className={`flex flex-col items-center transition-all ${activeTab === 'learn' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
+        <button onClick={() => setActiveTab('learn')} className={`flex flex-col items-center transition-all ${activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <BookOpen size={22} fill={activeTab === 'learn' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Belajar</span>
         </button>
@@ -910,16 +910,16 @@ function App() {
         {/* Floating Center Mic Button */}
         <div className="relative -top-6">
           <div className="absolute inset-0 bg-green-700 rounded-full blur-xl opacity-20 scale-150"></div>
-          <button onClick={() => setActiveTab('setor')} className={`w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 transform active:scale-90 ${activeTab === 'setor' ? 'bg-green-700 text-white rotate-[360deg]' : 'bg-white text-gray-400 rotate-0'}`}>
+          <button onClick={() => setActiveTab('setor')} className={`w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 transform active:scale-90 ${activeTab === 'setor' ? 'bg-green-700 text-white rotate-[360deg]' : 'bg-white text-green-500 hover:text-green-600 rotate-0'}`}>
             <Mic size={30} strokeWidth={2.5} />
           </button>
         </div>
 
-        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
+        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <List size={22} fill={activeTab === 'quran' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Daftar Surah</span>
         </button>
-        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110' : 'text-gray-300 hover:text-gray-500'}`}>
+        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Profil</span>
         </button>
