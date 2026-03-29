@@ -20,6 +20,8 @@ const MOCK_QURAN = {
   ]
 };
 
+const APP_VERSION = "1.2.1"; // Versi untuk debugging
+
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
   const [sessionState, setSessionState] = useState('idle');
@@ -258,7 +260,7 @@ function App() {
     }
 
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbwqmsSLXdyZxLHAI76DkCLQqs0LpgadjdFL1qMMLpUtkRd5nNTwTDXyvV2gn4C-0WBk/exec";
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
 
       const response = await fetch(GAS_URL, {
         method: 'POST',
@@ -280,7 +282,7 @@ function App() {
       try {
         result = JSON.parse(textResponse);
       } catch (e) {
-        throw new Error("Balasan GAS bukan JSON (Biasanya karena salah setting Akses): " + textResponse.substring(0, 50));
+        throw new Error(`Server GAS memberikan balasan yang tidak valid (bukan JSON). Ini isi balasannya: "${textResponse.substring(0, 200)}..."`);
       }
 
       setScore(result.score);
@@ -935,6 +937,11 @@ function App() {
       <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-gray-900 rounded-3xl z-[100] flex items-center justify-center">
          <div className="w-12 h-1 bg-gray-800 rounded-full mr-12"></div>
          <div className="w-3 h-3 bg-gray-800 rounded-full"></div>
+      </div>
+
+      {/* App Version for Debugging */}
+      <div className="absolute bottom-0 right-2 text-[8px] text-gray-300 font-mono">
+        v{APP_VERSION}
       </div>
     </div>
   )
