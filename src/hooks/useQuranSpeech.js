@@ -1,47 +1,80 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 export const useQuranSpeech = () => {
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState(null);
   
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      setError('Browser tidak mendukung fitur pengenalan suara. Gunakan Google Chrome/Edge.');
-      return;
-    }
+  const startListening = async () => {
+    setError(null);
+    setTranscript('🎙️ Sedang merekam suara (Mode Premium AI)...');
+    audioChunksRef.current = [];
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true; 
-    recognition.interimResults = true; 
-    recognition.lang = 'ar-SA'; // Bahasa Arab
-
-    recognition.onresult = (event) => {
-      let currentTranscript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        currentTranscript += event.results[i][0].transcript;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Deteksi format audio terbaik yang didukung browser HP/Laptop (Android pakai WebM, Apple pakai MP4)
+      let mimeType = 'audio/webm';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/mp4'; 
       }
-      setTranscript(currentTranscript);
-    };
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = ''; 
+      }
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
-      setError(event.error);
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorderRef.current.stream = stream; // Simpan referensi stream agar bisa dimatikan
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (err) {
+      setError('Akses microphone ditolak atau error. Detail: ' + err.message);
       setIsListening(false);
-    };
+    }
+  };
 
-    recognition.onend = () => {
-      setIsListening(false);
-    };
+  const stopListening = () => {
+    return new Promise((resolve) => {
+      if (mediaRecorderRef.current && isListening) {
+        mediaRecorderRef.current.onstop = () => {
+          const mimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
+          // Bungkus pecahan audio menjadi 1 file utuh
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          
+          // Ubah file Audio menjadi teks (Base64) agar bisa dikirim ke Server GAS Google
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            
+            // Matikan total semua sensor mic agar lampu indikator HP benar-benar mati
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            
+            resolve({ audioBase64: base64String, audioMimeType: mimeType });
+          };
+        };
 
-    recognitionRef.current = recognition;
-  }, []);
+        mediaRecorderRef.current.stop();
+        setIsListening(false);
+        setTranscript('⏳ Memproses dan Mengunggah Audio ke AI...');
+      } else {
+        resolve(null);
+      }
+    });
+  };
 
-  const startListening = () => {
+  return { transcript, isListening, startListening, stopListening, error };
+};
     setTranscript('');
     setError(null);
     if (recognitionRef.current) {
