@@ -7,6 +7,7 @@ export const useQuranSpeech = () => {
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const streamRef = useRef(null); // Wadah khusus untuk sensor mic
 
   const startListening = async () => {
     setError(null);
@@ -24,6 +25,7 @@ export const useQuranSpeech = () => {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream; // Simpan sensor mic ke wadah khusus
       
       // Deteksi format audio terbaik yang didukung browser HP/Laptop (Android pakai WebM, Apple pakai MP4)
       let mimeType = 'audio/webm';
@@ -36,7 +38,6 @@ export const useQuranSpeech = () => {
 
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorderRef.current.stream = stream; // Simpan referensi stream agar bisa dimatikan
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -81,7 +82,9 @@ export const useQuranSpeech = () => {
             const base64String = reader.result.split(',')[1];
             
             // Matikan total semua sensor mic agar lampu indikator HP benar-benar mati
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            if (streamRef.current) {
+              streamRef.current.getTracks().forEach(track => track.stop());
+            }
             
             resolve({ audioBase64: base64String, audioMimeType: mimeType });
           };
