@@ -7,7 +7,8 @@ export const useQuranSpeech = () => {
   
   const recognitionRef = useRef(null);
   const isManualStopRef = useRef(false); // Deteksi apakah user menekan tombol Berhenti
-  const fullTranscriptRef = useRef(''); // Akumulasi teks yang stabil
+  const previousTranscriptRef = useRef(''); // Teks dari sesi-sesi mic sebelumnya
+  const currentTranscriptRef = useRef('');  // Teks dari sesi mic yang sedang berjalan
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -19,18 +20,20 @@ export const useQuranSpeech = () => {
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true; 
-    // Matikan interim agar tidak ada kata yang menumpuk/mengulang (stuttering)
-    recognition.interimResults = false; 
+    // Nyalakan kembali interim agar UI terasa responsif, logika baru kita kebal terhadap stuttering
+    recognition.interimResults = true; 
     recognition.lang = 'ar-SA'; // Bahasa Arab
 
     recognition.onresult = (event) => {
-      let currentChunk = '';
-      // Hanya ambil blok kata yang baru dan sudah final
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        currentChunk += event.results[i][0].transcript + ' ';
+      let currentSessionText = '';
+      // Selalu susun ulang dari 0 untuk menghindari bug duplikasi di browser HP
+      for (let i = 0; i < event.results.length; i++) {
+        currentSessionText += event.results[i][0].transcript + ' ';
       }
-      fullTranscriptRef.current += currentChunk;
-      setTranscript(fullTranscriptRef.current.trim());
+      currentTranscriptRef.current = currentSessionText;
+      
+      // Gabungkan memori teks lama dengan yang baru
+      setTranscript((previousTranscriptRef.current + ' ' + currentTranscriptRef.current).trim());
     };
 
     recognition.onerror = (event) => {
@@ -43,6 +46,12 @@ export const useQuranSpeech = () => {
     recognition.onend = () => {
       // Jika mic mati sendiri (karena jeda napas) padahal user belum tekan "Berhenti", hidupkan lagi!
       if (!isManualStopRef.current) {
+        // Simpan hasil tangkapan sesi ini ke memori permanen sebelum restart
+        if (currentTranscriptRef.current.trim() !== '') {
+          previousTranscriptRef.current += ' ' + currentTranscriptRef.current.trim();
+        }
+        currentTranscriptRef.current = ''; // Kosongkan sesi saat ini
+        
         try {
           recognition.start();
         } catch(e) {
@@ -58,7 +67,8 @@ export const useQuranSpeech = () => {
 
   const startListening = () => {
     setTranscript('');
-    fullTranscriptRef.current = '';
+    previousTranscriptRef.current = '';
+    currentTranscriptRef.current = '';
     setError(null);
     isManualStopRef.current = false;
     if (recognitionRef.current) {
