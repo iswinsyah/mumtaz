@@ -242,9 +242,11 @@ function App() {
   };
 
   const handleStopSetoran = async () => {
-    stopListening();
     setSessionState('processing');
     setAiNote('');
+
+    // Hentikan rekaman dan tunggu proses konversi audio selesai
+    const audioData = await stopListening();
 
     // Gunakan data dari surah/juz yang sedang dipelajari
     const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
@@ -252,8 +254,8 @@ function App() {
       .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
       .map(t => t.arabic).join(" ");
 
-    // Jika mic tidak menangkap suara
-    if (!transcript || transcript.trim() === "") {
+    // Jika mic batal/gagal menangkap suara
+    if (!audioData || !audioData.audioBase64) {
       setScore(0);
       setAiNote("Tidak ada suara yang terdeteksi. Pastikan mic berfungsi dan silakan coba lagi.");
       setSessionState('result');
@@ -268,7 +270,14 @@ function App() {
         // Hapus headers sama sekali agar browser otomatis memakai standard text/plain murni
         // Ini ampuh 100% untuk menghindari blokir Preflight CORS dari sistem Google
         // Kirim juga data ustadz yang terpilih ke GAS
-        body: JSON.stringify({ targetText, transcript, ustadz: selectedUstadz })
+        body: JSON.stringify({ 
+          targetText, 
+          ustadz: selectedUstadz,
+          audio: {
+            base64: audioData.audioBase64,
+            mimeType: audioData.audioMimeType
+          }
+        })
       });
 
       const textResponse = await response.text();

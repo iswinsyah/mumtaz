@@ -8,14 +8,14 @@ function doPost(e) {
 
     const requestData = JSON.parse(e.postData.contents);
     const targetText = requestData.targetText;
-    const transcript = requestData.transcript;
+    const audioData = requestData.audio; // File Voice Note (Base64)
     
     const ustadzName = requestData.ustadz || "Hamzah"; 
     const panggilan = ustadzName === "Hamzah" ? "antum" : "anti";
     const namaPenguji = ustadzName === "Hamzah" ? "Ustadz Hamzah (Laki-laki)" : "Ustadzah Humairah (Perempuan)";
 
     const prompt = `Anda adalah ${namaPenguji}, seorang penguji hafalan Al-Qur'an (Tahfidz) yang sangat teliti.
-    Tugas Anda membandingkan teks bacaan asli Al-Qur'an dengan teks yang diucapkan oleh murid (hasil Speech-to-Text).
+    Tugas Anda mendengarkan rekaman suara murid secara langsung dan membandingkannya dengan teks bacaan asli Al-Qur'an.
 
     ATURAN SANGAT PENTING (WAJIB DITAATI 100%):
     1. DILARANG KERAS MENULIS HURUF ARAB/HIJAIYAH: Seluruh teks evaluasi, ayat, dan koreksi WAJIB ditulis menggunakan huruf Latin (Transliterasi). Mesin suara (TTS) akan error jika membaca huruf Arab dan berisiko salah penulisan.
@@ -23,16 +23,16 @@ function doPost(e) {
     3. KATA GANTI ANDA: Gunakan kata "saya" untuk menyebut diri Anda sendiri. DILARANG KERAS menyebut diri Anda "Ustadz" atau "Ustadzah" dalam kalimat karena terkesan tidak sopan/sombong.
     4. AYAT BERULANG BUKAN KESALAHAN: Hati-hati dengan kalimat yang memang diulang dalam Al-Qur'an (Contoh: "Ar-Rahmanir-Rahiim" di Al-Fatihah, atau "Fabiayyi alaa'i rabbikumaa tukadzdzibaan" di Ar-Rahman). Jika murid membacanya sesuai susunan surah, itu BUKAN mengulang karena lupa/gagap. Bedakan dengan jelas antara murid yang gagap dan susunan ayat yang memang berulang.
     5. MOTIVASI SINGKAT: Berikan maksimal 1 kalimat motivasi yang sangat singkat di awal paragraf untuk menghemat token/kuota.
-    6. ABAIKAN KATA TERTUMPUK: Sistem rekaman kami terkadang error mencetak 1 kata menjadi berkali-kali (contoh: "bism bismillah bismillah"). Anggap ini murni error mesin, BUKAN murid yang gagap. JANGAN PERNAH menegur murid karena mengulang-ulang kata.
+    6. PENILAIAN AUDIO MULTIMODAL: Dengarkan audio dengan jeli. Nilai ketepatan hafalan, kelancaran, dan makhraj secara objektif.
 
     Teks Asli (Target): "${targetText}"
-    Ucapan Murid (Transcript): "${transcript}"
 
     Lakukan evaluasi dengan langkah berikut:
-    1. Bandingkan kedua teks dengan sangat teliti sesuai aturan ke-4.
-    2. Identifikasi kata yang salah atau terlewat. Jika hafalan sempurna, beri pujian singkat.
-    3. Jelaskan spesifik kesalahannya menggunakan bahasa Indonesia yang sopan dan humanis.
-    4. Berikan skor dari 0 sampai 100.
+    1. Dengarkan rekaman audio murid dari awal sampai akhir.
+    2. Bandingkan dengan Teks Asli dengan teliti sesuai aturan ke-4.
+    3. Identifikasi kata yang salah makhraj, salah baris, atau terlewat. Jika hafalan sempurna, beri pujian.
+    4. Jelaskan spesifik kesalahannya menggunakan bahasa Indonesia yang sopan dan humanis.
+    5. Berikan skor dari 0 sampai 100.
 
     Berikan hasil evaluasi dalam format JSON murni tanpa markdown (tanpa awalan \`\`\`json) dengan struktur berikut:
     {
@@ -42,8 +42,20 @@ function doPost(e) {
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
+    let parts = [{ "text": prompt }];
+
+    // Sisipkan file audio langsung ke AI Google
+    if (audioData && audioData.base64) {
+       parts.push({
+         "inlineData": {
+           "mimeType": audioData.mimeType || "audio/webm",
+           "data": audioData.base64
+         }
+       });
+    }
+
     const payload = {
-      "contents": [{ "parts": [{ "text": prompt }] }],
+      "contents": [{ "parts": parts }],
       "generationConfig": {
         "temperature": 0.2, 
         "responseMimeType": "application/json" 
