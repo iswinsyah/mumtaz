@@ -250,10 +250,10 @@ function App() {
       .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
       .map(t => t.arabic).join(" ");
 
-    // Jika mic batal/gagal menangkap suara, atau file rekaman ternyata kosong (< 500 bytes)
-    if (!audioData || !audioData.audioBase64 || audioData.size < 500) {
+    // Jika mic batal/gagal menangkap suara, atau file rekaman kosong/terlalu kecil (< 3000 bytes)
+    if (!audioData || !audioData.audioBase64 || audioData.size < 3000) {
       setSessionState('idle');
-      alert("Rekaman kosong atau mikrofon tidak menangkap suara. Pastikan Anda sudah berbicara setelah memencet tombol mulai.");
+      alert(`Rekaman gagal (Ukuran audio: ${audioData.size || 0} bytes). Pastikan mikrofon HP Anda tidak dibisukan oleh browser dan Anda berbicara cukup keras.`);
       return;
     }
 
@@ -284,7 +284,9 @@ function App() {
       }
 
       setScore(result.score);
-      setAiNote(result.note);
+      // Tampilkan apa yang sebenarnya didengar AI untuk evaluasi kita
+      const aiHeardText = result.ai_heard ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : '';
+      setAiNote(aiHeardText + result.note);
       setSessionState('result');
 
       if (result.score >= 95) {

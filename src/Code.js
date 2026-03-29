@@ -28,21 +28,23 @@ function doPost(e) {
     Teks Asli (Target): "${targetText}"
 
     Lakukan evaluasi dengan langkah berikut:
-    1. Dengarkan rekaman audio murid dari awal sampai akhir.
-    2. Bandingkan dengan Teks Asli dengan teliti sesuai aturan ke-4.
+    1. Dengarkan rekaman audio murid dari awal sampai akhir. Tuliskan transkrip apa yang Anda dengar.
+    2. Bandingkan transkrip tersebut dengan Teks Asli dengan teliti sesuai aturan ke-4.
     3. Identifikasi kata yang salah makhraj, salah baris, atau terlewat. Jika hafalan sempurna, beri pujian.
     4. Jelaskan spesifik kesalahannya menggunakan bahasa Indonesia yang sopan dan humanis.
     5. Berikan skor dari 0 sampai 100.
 
     Berikan hasil evaluasi dalam format JSON murni tanpa markdown (tanpa awalan \`\`\`json) dengan struktur berikut:
     {
+      "ai_heard": "[Tuliskan kata demi kata apa yang Anda dengar dari audio. Jika hanya suara hening/noise, tulis 'Saya tidak mendengar suara bacaan']",
       "score": [angka 0 sampai 100],
       "note": "[1 Kalimat motivasi super singkat]. [Penjelasan koreksi menggunakan huruf latin, memanggil murid '${panggilan}', dan menyebut diri 'saya']."
     }`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
-    let parts = [{ "text": prompt }];
+    // PENTING: File Audio harus diletakkan SEBELUM teks instruksi agar AI mendengarkannya terlebih dahulu
+    let parts = [];
 
     // Sisipkan file audio langsung ke AI Google
     if (audioData && audioData.base64) {
@@ -53,6 +55,8 @@ function doPost(e) {
          }
        });
     }
+    
+    parts.push({ "text": prompt });
 
     const payload = {
       "contents": [{ "parts": parts }],
