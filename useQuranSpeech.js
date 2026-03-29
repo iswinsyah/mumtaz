@@ -86,6 +86,13 @@ export const useQuranSpeech = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
+      
+      // Amankan sisa teks terakhir jika ada
+      if (currentTranscriptRef.current.trim() !== '') {
+        previousTranscriptRef.current += ' ' + currentTranscriptRef.current.trim();
+        currentTranscriptRef.current = '';
+        setTranscript(previousTranscriptRef.current.trim());
+      }
     }
   };
 
