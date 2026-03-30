@@ -20,7 +20,7 @@ const MOCK_QURAN = {
   ]
 };
 
-const APP_VERSION = "1.2.1"; // Versi untuk debugging
+const APP_VERSION = "1.2.2"; // Versi untuk debugging
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -42,6 +42,7 @@ function App() {
   const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
   const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
   const [isMushafMode, setIsMushafMode] = useState(false); // Toggle mode mushaf
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState(null); // URL untuk memutar rekaman sendiri
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
@@ -186,6 +187,7 @@ function App() {
 
   const handleStartSetoran = () => {
     setSessionState('recording');
+    setRecordedAudioUrl(null);
     startListening();
   };
 
@@ -258,6 +260,10 @@ function App() {
       alert(`Rekaman gagal (Ukuran audio: ${audioData.size || 0} bytes). Pastikan mikrofon HP Anda tidak dibisukan oleh browser dan Anda berbicara cukup keras.`);
       return;
     }
+
+    // Buat URL audio agar bos bisa putar sendiri
+    const audioUrl = `data:${audioData.audioMimeType};base64,${audioData.audioBase64}`;
+    setRecordedAudioUrl(audioUrl);
 
     try {
       const GAS_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
@@ -844,6 +850,14 @@ function App() {
                     </p>
                   </div>
 
+                  {/* Audio Player Debug */}
+                  {recordedAudioUrl && (
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-2">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cek Rekaman Anda (Debug)</p>
+                      <audio controls src={recordedAudioUrl} className="w-full h-10" />
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-3">
                     <button 
                       onClick={handleCopyResult} 
@@ -868,10 +882,13 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-[800px] bg-yellow-50 shadow-2xl rounded-[3.5rem] border-[12px] border-gray-900 overflow-hidden relative font-sans flex flex-col text-gray-800 select-none">
+    <div className="max-w-md mx-auto h-[800px] bg-gray-50 shadow-2xl rounded-[3.5rem] border-[12px] border-gray-900 overflow-hidden relative font-sans flex flex-col text-gray-800 select-none">
       {/* iOS Style Status Bar */}
       <div className="bg-white h-12 flex justify-between px-10 items-end pb-2 text-[12px] font-bold">
         <span>9:41</span>
+        <div className="bg-red-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse">
+          TEST V1.2.2
+        </div>
         <div className="flex gap-1.5 items-center">
           <div className="w-4 h-2 bg-gray-300 rounded-[2px] relative">
              <div className="absolute right-[-2px] top-0.5 w-1 h-1 bg-gray-300 rounded-full"></div>
@@ -880,7 +897,7 @@ function App() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-yellow-50">
+      <div className="flex-1 overflow-y-auto bg-gray-50">
         {renderTabContent()}
       </div>
 
