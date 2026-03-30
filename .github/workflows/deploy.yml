@@ -32,3 +32,5 @@ jobs:
           local-dir: ./dist/
           # Direktori tujuan di server Hostinger (Kembalikan ke root kamar utama)
           server-dir: ./
+          # BUKA KUNCI CACHE FTP: Paksa robot upload ulang semuanya dari nol
+          state-name: .sync-state-v2.json
