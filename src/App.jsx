@@ -20,7 +20,7 @@ const MOCK_QURAN = {
   ]
 };
 
-const APP_VERSION = "1.2.2"; // Versi untuk debugging
+const APP_VERSION = "1.2.3"; // Versi untuk debugging
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -886,8 +886,8 @@ function App() {
       {/* iOS Style Status Bar */}
       <div className="bg-white h-12 flex justify-between px-10 items-end pb-2 text-[12px] font-bold">
         <span>9:41</span>
-        <div className="bg-red-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse">
-          TEST V1.2.2
+        <div className="bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]">
+          GAS FIX V1.2.3
         </div>
         <div className="flex gap-1.5 items-center">
           <div className="w-4 h-2 bg-gray-300 rounded-[2px] relative">
