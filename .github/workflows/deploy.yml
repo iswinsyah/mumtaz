@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           # Direktori sumber di runner GitHub (hasil build Vite)
           local-dir: ./dist/
-          # Direktori tujuan di server Hostinger (Kembalikan ke root kamar utama)
-          server-dir: ./
+          # Direktori tujuan di server Hostinger (WAJIB MASUK KE public_html)
+          server-dir: public_html/
           # BUKA KUNCI CACHE FTP: Paksa robot upload ulang semuanya dari nol
           state-name: .sync-state-v2.json
