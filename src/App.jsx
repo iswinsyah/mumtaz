@@ -297,6 +297,13 @@ function App() {
       setAiNote(aiHeardText + result.note);
       setSessionState('result');
 
+      // Panggil fitur suara otomatis menggunakan jeda waktu agar transisi UI mulus
+      if (result.note) {
+         setTimeout(() => {
+           handleSpeakNote(result.note);
+         }, 800);
+      }
+
       if (result.score >= 95) {
         setTimeout(() => setShowSedekah(true), 1500);
       }
@@ -839,7 +846,10 @@ function App() {
 
                   <div className={`p-5 rounded-2xl ${getPredicate(score).bg} border border-white/50 space-y-2`}>
                     <button 
-                      onClick={() => handleSpeakNote(aiNote || getPredicate(score).note)}
+                      onClick={() => {
+                        const cleanNote = aiNote ? aiNote.replace(/\[.*?\]\n\n/g, '') : '';
+                        handleSpeakNote(cleanNote || getPredicate(score).note);
+                      }}
                       className={`mx-auto flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all bg-white/50 px-4 py-2 rounded-full shadow-sm ${isSpeakingNote ? 'text-green-700' : 'text-gray-600'}`}
                     >
                        {isSpeakingNote ? <Volume2 size={14} className="animate-pulse" /> : <Volume2 size={14} />} 
