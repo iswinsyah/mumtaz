@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Komponen Utama Aplikasi At Tahfidz
 import React, { useState, useRef, useEffect } from 'react';
 import { 
@@ -379,7 +380,7 @@ function App() {
           </div>
         );
 
-      case 'learn':
+      case 'learn': {
         // Tampilkan loading spinner saat data sedang diambil dari API
         if (isLoadingLearnData) {
           return (
@@ -545,6 +546,7 @@ function App() {
             </button>
           </div>
         );
+      }
 
       case 'juz':
         return (
@@ -597,7 +599,7 @@ function App() {
           </div>
         );
 
-      case 'quran':
+      case 'quran': {
         const juzList = Array.from({ length: 30 }, (_, i) => {
           const juzNum = i + 1;
           // Rumus standar halaman awal juz pada Al-Qur'an Pojok (Kemenag/Madinah)
@@ -716,6 +718,7 @@ function App() {
             </div>
           </div>
         );
+      }
 
       case 'profile':
         return (
