@@ -34,3 +34,5 @@ jobs:
           server-dir: public_html/
           # BUKA KUNCI CACHE FTP: Paksa robot upload ulang semuanya dari nol
           state-name: .sync-state-v2.json
+          # Perpanjang waktu tunggu (2 menit) jika server Hostinger lambat merespon
+          timeout: 120000
