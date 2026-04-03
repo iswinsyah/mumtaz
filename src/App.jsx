@@ -21,7 +21,7 @@ const MOCK_QURAN = {
   ]
 };
 
-const APP_VERSION = "1.2.3"; // Versi untuk debugging
+const APP_VERSION = "1.2.4"; // Versi untuk debugging
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -197,12 +197,18 @@ function App() {
     setIsLoadingLearnData(true);
     
     try {
+      // Deteksi pintar untuk struktur data JSON yang berbeda-beda
+      const nomor = surah.surahNumber || surah.nomor || surah.id || surah.number;
+      const nama = surah.surahName || surah.namaLatin || surah.nama || surah.name;
+      const jumlahAyat = surah.verses || surah.jumlahAyat || surah.numberOfAyahs || 0;
+
       // Memanggil data API EQuran (Kemenag)
-      const response = await fetch(`https://equran.id/api/v2/surat/${surah.surahNumber}`);
+      const response = await fetch(`https://equran.id/api/v2/surat/${nomor}`);
+      if (!response.ok) throw new Error("API EQuran bermasalah atau surah tidak ditemukan");
       const result = await response.json();
       
       // Menyusun ulang data agar sesuai format aplikasi kita
-      const formattedText = result.data.ayat.map(a => ({
+      const formattedText = (result.data?.ayat || []).map(a => ({
         id: a.nomorAyat,
         arabic: a.teksArab,
         indo: a.teksIndonesia
@@ -211,19 +217,21 @@ function App() {
       setSelectedLearnItem({
         type: 'surah',
         data: {
-          surah: surah.surahName,
-          surahNumber: surah.surahNumber,
-          ayat_range: `1-${surah.verses}`,
-          verses: surah.verses,
+          surah: nama,
+          surahNumber: nomor,
+          ayat_range: `1-${jumlahAyat || formattedText.length}`,
+          verses: jumlahAyat || formattedText.length,
           text: formattedText
         }
       });
       
       // Set rentang ayat bawaan ke seluruh isi surah tersebut
       setAyahStart(1);
-      setAyahEnd(surah.verses);
+      setAyahEnd(jumlahAyat || formattedText.length);
     } catch (err) {
+      console.error("Error Detail:", err);
       alert("Gagal mengambil data surah. Pastikan koneksi internet lancar.");
+      setActiveTab('quran'); // Kembalikan ke halaman daftar surah jika gagal
     } finally {
       setIsLoadingLearnData(false);
     }
@@ -613,7 +621,10 @@ function App() {
         });
 
         // Filter data berdasarkan input pencarian
-        const filteredSurah = quranData.filter(s => s.surahName.toLowerCase().includes(searchQuery.toLowerCase()));
+        const filteredSurah = (quranData || []).filter(s => {
+          const nama = s.surahName || s.namaLatin || s.nama || s.name || '';
+          return nama.toLowerCase().includes(searchQuery.toLowerCase());
+        });
         const filteredJuz = juzList.filter(j => j.title.toLowerCase().includes(searchQuery.toLowerCase()) || (j.subtitle && j.subtitle.toLowerCase().includes(searchQuery.toLowerCase())));
 
         return (
@@ -664,27 +675,34 @@ function App() {
               <div className="overflow-y-auto flex-1 p-2 space-y-1">
                 {quranView === 'surah' ? (
                 filteredSurah.length > 0 ? (
-                  filteredSurah.map((surah) => (
+                  filteredSurah.map((surah) => {
+                    const nomorSurah = surah.surahNumber || surah.nomor || surah.id || surah.number;
+                    const namaSurah = surah.surahName || surah.namaLatin || surah.nama || surah.name;
+                    const jumlahAyat = surah.verses || surah.jumlahAyat || surah.numberOfAyahs;
+                    const juzSurah = surah.juz || ''; 
+                    const pageSurah = surah.page || (juzSurah === 1 ? 1 : (juzSurah ? (juzSurah - 1) * 20 + 2 : ''));
+                    
+                    return (
                     <div 
-                      key={surah.surahNumber} 
+                      key={nomorSurah} 
                       onClick={() => handleSelectSurah(surah)}
                       className="flex justify-between items-center p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-8 h-8 flex items-center justify-center bg-gray-100 group-hover:bg-green-100 text-gray-500 group-hover:text-green-700 font-bold rounded-lg text-xs transition-colors">
-                          {surah.surahNumber}
+                          {nomorSurah}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800 group-hover:text-green-800 transition-colors">{surah.surahName}</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Juz {surah.juz} • {surah.verses} Ayat</p>
+                          <p className="font-bold text-gray-800 group-hover:text-green-800 transition-colors">{namaSurah}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">{juzSurah ? `Juz ${juzSurah} • ` : ''}{jumlahAyat} Ayat</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        {/* Gunakan data page, jika tidak ada (untuk juz selain 29/30) hitung manual halamannya */}
-                        <span className="text-sm font-black text-green-700">{surah.page || (surah.juz === 1 ? 1 : (surah.juz - 1) * 20 + 2)}</span>
+                        <span className="text-sm font-black text-green-700">{pageSurah}</span>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-10 text-gray-400 text-sm font-medium">Surah tidak ditemukan</div>
                 )
@@ -936,11 +954,11 @@ function App() {
 
       {/* Bottom Navigation Bar */}
       <div className="h-24 bg-white/80 backdrop-blur-md border-t border-gray-100 flex justify-around items-center px-6 pb-6 relative z-50">
-        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center transition-all ${activeTab === 'home' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-600/50 hover:text-green-600'}`}>
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center transition-all ${activeTab === 'home' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Sosial</span>
         </button>
-        <button onClick={() => setActiveTab('learn')} className={`flex flex-col items-center transition-all ${activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-600/50 hover:text-green-600'}`}>
+        <button onClick={() => setActiveTab('learn')} className={`flex flex-col items-center transition-all ${activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <BookOpen size={22} fill={activeTab === 'learn' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Belajar</span>
         </button>
@@ -948,16 +966,16 @@ function App() {
         {/* Floating Center Mic Button */}
         <div className="relative -top-6">
           <div className="absolute inset-0 bg-green-700 rounded-full blur-xl opacity-20 scale-150"></div>
-          <button onClick={() => setActiveTab('setor')} className={`w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 transform active:scale-90 ${activeTab === 'setor' ? 'bg-green-800 text-white rotate-[360deg]' : 'bg-green-600 text-white hover:bg-green-700 rotate-0'}`}>
+          <button onClick={() => setActiveTab('setor')} className={`w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 transform active:scale-90 ${activeTab === 'setor' ? 'bg-green-800 text-white rotate-[360deg]' : 'bg-green-500 text-white hover:bg-green-600 rotate-0'}`}>
             <Mic size={30} strokeWidth={2.5} />
           </button>
         </div>
 
-        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-600/50 hover:text-green-600'}`}>
+        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <List size={22} fill={activeTab === 'quran' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Daftar Surah</span>
         </button>
-        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-600/50 hover:text-green-600'}`}>
+        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Profil</span>
         </button>
