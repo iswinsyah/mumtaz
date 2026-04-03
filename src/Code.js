@@ -19,9 +19,9 @@ function doPost(e) {
 
     ATURAN SANGAT PENTING (WAJIB DITAATI 100%):
     1. DILARANG KERAS MENULIS HURUF ARAB/HIJAIYAH: Seluruh teks evaluasi, ayat, dan koreksi WAJIB ditulis menggunakan huruf Latin (Transliterasi). Mesin suara (TTS) akan error jika membaca huruf Arab.
-    2. KATA GANTI MURID: Gunakan kata "${panggilan}" murni sebagai kata ganti orang kedua (artinya "kamu" atau "anda").
+    2. KATA GANTI MURID: Kata "${panggilan}" adalah kata ganti orang (artinya "Anda" atau "kamu"), BUKAN nama orang. Gunakan kata "${panggilan}" secara natural dalam tata bahasa. Contoh benar: "Coba ${panggilan} perhatikan lagi tajwidnya." Contoh SALAH: "Terima kasih ya antum."
     3. KATA GANTI ANDA: Gunakan kata "saya" untuk menyebut diri Anda sendiri. DILARANG KERAS menyebut diri Anda "Ustadz" atau "Ustadzah" dalam kalimat.
-    4. EVALUASI JUJUR DAN DETAIL: Jika bacaannya buruk/salah/banyak lupa, katakan salah secara spesifik di bagian/kata mana letak kesalahannya dalam huruf latin, dan berutahu yang benarnya seperti apa. Jika sempurna, puji dengan tulus. Evaluasi harus mewakili sosok guru yang sesungguhnya!
+    4. EVALUASI JUJUR DAN DETAIL: Jika bacaannya buruk/salah/banyak lupa, katakan salah secara spesifik di bagian/kata mana letak kesalahannya dalam huruf latin, dan beritahu yang benarnya seperti apa. Jika sempurna, puji dengan tulus. Evaluasi harus mewakili sosok guru yang sesungguhnya!
     5. AYAT BERULANG BUKAN KESALAHAN: Hati-hati dengan kalimat yang memang diulang dalam Al-Qur'an (seperti di Ar-Rahman). 
 
     Teks Asli (Target): "${targetText}"
@@ -37,11 +37,11 @@ function doPost(e) {
     {
       "ai_heard": "[Tuliskan kata demi kata apa yang Anda dengar dari audio. Jika hening/noise, tulis 'Saya tidak mendengar suara bacaan']",
       "score": [angka 0 sampai 100],
-      "note": "[Ulasan lengkap dan jujur Anda sebagai guru pembimbing. Sapa murid dengan '${panggilan}'. Puji poin positifnya, namun jelaskan letak rinci kesalahannya jika ada, dan beri koreksi pembenarannya.]"
+      "note": "[Ulasan lengkap dan jujur Anda sebagai guru pembimbing. Gunakan kata '${panggilan}' sebagai kata ganti murid. Puji poin positifnya, namun jelaskan letak rinci kesalahannya jika ada, dan beri koreksi pembenarannya.]"
     }`;
 
-
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Menggunakan Model Gemini 2.5 Flash (Generasi Terbaru untuk API Premium)
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     // PENTING: File Audio harus diletakkan SEBELUM teks instruksi agar AI mendengarkannya terlebih dahulu
     let parts = [];
@@ -105,11 +105,38 @@ function doPost(e) {
        throw new Error("Format balasan AI tidak sesuai: " + responseText);
     }
 
-    return ContentService.createTextOutput(geminiText)
+    // --- MENGUBAH TEKS MENJADI SUARA MANUSIA (GOOGLE CLOUD TTS WAVENET) ---
+    let finalResponseObj;
+    try {
+      finalResponseObj = JSON.parse(geminiText); // Parse JSON dari Gemini
+      
+      const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GEMINI_API_KEY}`;
+      // Wavenet-B = Pria Dewasa (Hamzah), Wavenet-A = Wanita (Humairah)
+      const voiceName = ustadzName === "Hamzah" ? "id-ID-Wavenet-B" : "id-ID-Wavenet-A"; 
+      
+      const ttsPayload = {
+        "input": { "text": finalResponseObj.note },
+        "voice": { "languageCode": "id-ID", "name": voiceName },
+        "audioConfig": { "audioEncoding": "MP3", "speakingRate": 0.95 } // Intonasi diperlambat agar berwibawa
+      };
+      
+      const ttsOptions = { "method": "post", "contentType": "application/json", "payload": JSON.stringify(ttsPayload), "muteHttpExceptions": true };
+      const ttsRes = UrlFetchApp.fetch(ttsUrl, ttsOptions);
+      
+      if (ttsRes.getResponseCode() === 200) {
+         finalResponseObj.audio_base64 = JSON.parse(ttsRes.getContentText()).audioContent;
+      }
+    } catch(e) {
+      // Jika Cloud TTS belum diaktifkan/gagal, abaikan. Aplikasi akan pakai suara robot otomatis.
+      if (!finalResponseObj) return ContentService.createTextOutput(geminiText).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(finalResponseObj))
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
     const errorRes = {
+      "ai_heard": "[Sistem Gagal Memproses]",
       "score": 0,
       "note": "Maaf, saya sedang mengalami kendala teknis. Detail: " + error.message
     };

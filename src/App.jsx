@@ -21,7 +21,7 @@ const MOCK_QURAN = {
   ]
 };
 
-const APP_VERSION = "1.2.5"; // Versi untuk debugging
+const APP_VERSION = "1.3.0"; // Versi Premium Voice (WaveNet)
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -39,6 +39,7 @@ function App() {
   const [ayahStart, setAyahStart] = useState(1); // Filter ayat awal
   const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
+  const [aiAudio, setAiAudio] = useState(null); // Audio Premium dari AI
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
   const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
   const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
@@ -49,16 +50,14 @@ function App() {
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
   const audioRef = useRef(null);
+  const ustadzAudioRef = useRef(null);
 
   // Bersihkan audio saat komponen tertutup atau pindah tab
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel(); // Hentikan suara AI jika ganti tab
-      }
+      if (audioRef.current) audioRef.current.pause();
+      if (ustadzAudioRef.current) ustadzAudioRef.current.pause();
+      if (window.speechSynthesis) window.speechSynthesis.cancel(); // Hentikan suara AI jika ganti tab
     };
   }, [activeTab]);
 
@@ -106,6 +105,35 @@ function App() {
     newAudio.onerror = () => { alert("Maaf, audio belum tersedia untuk ayat ini."); setIsPlayingAudio(false); setPlayingAyah(null); setIsAutoplay(false); };
     
     newAudio.play();
+  };
+
+  const handlePlayUstadzVoice = (text, base64) => {
+    // Jika sedang bicara, matikan
+    if (isSpeakingNote) {
+      if (ustadzAudioRef.current) {
+        ustadzAudioRef.current.pause();
+        ustadzAudioRef.current.currentTime = 0;
+      }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      setIsSpeakingNote(false);
+      return;
+    }
+
+    // Jika ada audio premium (WaveNet)
+    if (base64) {
+      const audio = new Audio("data:audio/mp3;base64," + base64);
+      ustadzAudioRef.current = audio;
+      audio.onplay = () => setIsSpeakingNote(true);
+      audio.onended = () => setIsSpeakingNote(false);
+      audio.onerror = () => {
+        setIsSpeakingNote(false);
+        handleSpeakNote(text); // Fallback ke robot
+      };
+      audio.play().catch(() => handleSpeakNote(text));
+    } else {
+      // Fallback ke robot bawaan browser
+      handleSpeakNote(text);
+    }
   };
 
   const handleDownloadAyah = async (surahNum, ayahNum, e) => {
@@ -319,12 +347,13 @@ function App() {
       // Tampilkan apa yang sebenarnya didengar AI untuk evaluasi kita
       const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : `[⚠️ PERINGATAN BUGS: Server yang merespon ini adalah server versi lama! Coba periksa URL GAS bos.]\n\n`;
       setAiNote(aiHeardText + result.note);
+      setAiAudio(result.audio_base64 || null);
       setSessionState('result');
 
       // Panggil fitur suara otomatis menggunakan jeda waktu agar transisi UI mulus
       if (result.note) {
          setTimeout(() => {
-           handleSpeakNote(result.note);
+           handlePlayUstadzVoice(result.note, result.audio_base64);
          }, 800);
       }
 
@@ -884,7 +913,7 @@ function App() {
                     <button 
                       onClick={() => {
                         const cleanNote = aiNote ? aiNote.replace(/\[.*?\]\n\n/g, '') : '';
-                        handleSpeakNote(cleanNote || getPredicate(score).note);
+                        handlePlayUstadzVoice(cleanNote || getPredicate(score).note, aiAudio);
                       }}
                       className={`mx-auto flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all bg-white/50 px-4 py-2 rounded-full shadow-sm ${isSpeakingNote ? 'text-green-700' : 'text-gray-600'}`}
                     >
@@ -933,7 +962,7 @@ function App() {
       <div className="bg-white h-12 flex justify-between px-10 items-end pb-2 text-[12px] font-bold">
         <span>9:41</span>
         <div className="bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]">
-          API FIX V1.2.5
+          PREMIUM VOICE V1.3.0
         </div>
         <div className="flex gap-1.5 items-center">
           <div className="w-4 h-2 bg-gray-300 rounded-[2px] relative">
