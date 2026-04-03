@@ -21,7 +21,7 @@ const MOCK_QURAN = {
   ]
 };
 
-const APP_VERSION = "1.2.4"; // Versi untuk debugging
+const APP_VERSION = "1.2.5"; // Versi untuk debugging
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -202,35 +202,50 @@ function App() {
       const nama = surah.surahName || surah.namaLatin || surah.nama || surah.name;
       const jumlahAyat = surah.verses || surah.jumlahAyat || surah.numberOfAyahs || 0;
 
-      // Memanggil data API EQuran (Kemenag)
-      const response = await fetch(`https://equran.id/api/v2/surat/${nomor}`);
-      if (!response.ok) throw new Error("API EQuran bermasalah atau surah tidak ditemukan");
-      const result = await response.json();
+      let formattedText = [];
       
-      // Menyusun ulang data agar sesuai format aplikasi kita
-      const formattedText = (result.data?.ayat || []).map(a => ({
-        id: a.nomorAyat,
-        arabic: a.teksArab,
-        indo: a.teksIndonesia
-      }));
+      try {
+        // Prioritas 1: Coba server utama (EQuran Kemenag)
+        const response = await fetch(`https://equran.id/api/v2/surat/${nomor}`);
+        if (!response.ok) throw new Error("API EQuran bermasalah");
+        const result = await response.json();
+        formattedText = (result.data?.ayat || []).map(a => ({
+          id: a.nomorAyat,
+          arabic: a.teksArab,
+          indo: a.teksIndonesia
+        }));
+        if (formattedText.length === 0) throw new Error("Data ayat kosong");
+      } catch (err1) {
+        // Prioritas 2: Server Cadangan jika Kemenag error/diblokir CORS Hostinger
+        const response2 = await fetch(`https://quran-api.santrikoding.com/api/surah/${nomor}`);
+        if (!response2.ok) throw new Error("API Cadangan bermasalah");
+        const result2 = await response2.json();
+        formattedText = (result2.ayat || []).map(a => ({
+          id: a.nomor,
+          arabic: a.ar,
+          indo: a.idn
+        }));
+      }
+
+      if (formattedText.length === 0) throw new Error("Semua server gagal memuat ayat");
 
       setSelectedLearnItem({
         type: 'surah',
         data: {
           surah: nama,
           surahNumber: nomor,
-          ayat_range: `1-${jumlahAyat || formattedText.length}`,
-          verses: jumlahAyat || formattedText.length,
+          ayat_range: `1-${formattedText.length}`,
+          verses: formattedText.length,
           text: formattedText
         }
       });
       
       // Set rentang ayat bawaan ke seluruh isi surah tersebut
       setAyahStart(1);
-      setAyahEnd(jumlahAyat || formattedText.length);
+      setAyahEnd(formattedText.length);
     } catch (err) {
       console.error("Error Detail:", err);
-      alert("Gagal mengambil data surah. Pastikan koneksi internet lancar.");
+      alert("Gagal mengambil data surah dari server utama maupun cadangan. Coba lagi nanti.");
       setActiveTab('quran'); // Kembalikan ke halaman daftar surah jika gagal
     } finally {
       setIsLoadingLearnData(false);
@@ -918,7 +933,7 @@ function App() {
       <div className="bg-white h-12 flex justify-between px-10 items-end pb-2 text-[12px] font-bold">
         <span>9:41</span>
         <div className="bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]">
-          GAS FIX V1.2.3
+          API FIX V1.2.5
         </div>
         <div className="flex gap-1.5 items-center">
           <div className="w-4 h-2 bg-gray-300 rounded-[2px] relative">
