@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -201,9 +201,11 @@ function App() {
     newAudio.play();
   };
 
-  const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
+  const handlePlayAyah = (surahNum, ayahNum, listId = null, autoNext = false) => {
+    const targetId = listId || ayahNum;
+
     // Jika ayat yang sama diklik saat sedang play, maka pause
-    if (playingAyah === ayahNum && isPlayingAudio) {
+    if (playingAyah === targetId && isPlayingAudio) {
       audioRef.current?.pause();
       setIsPlayingAudio(false);
       setPlayingAyah(null);
@@ -223,14 +225,15 @@ function App() {
     const newAudio = new Audio(audioUrl);
     audioRef.current = newAudio;
     
-    newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(ayahNum); };
+    newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(targetId); };
     newAudio.onended = () => { 
       if (autoNext) {
         const currentList = playlistRef.current;
-        const currentIndex = currentList.findIndex(a => a.id === ayahNum);
+        const currentIndex = currentList.findIndex(a => a.id === targetId);
         if (currentIndex !== -1 && currentIndex + 1 < currentList.length) {
           // Jika masih ada ayat selanjutnya, putar otomatis
-          handlePlayAyah(surahNum, currentList[currentIndex + 1].id, true);
+          const nextItem = currentList[currentIndex + 1];
+          handlePlayAyah(nextItem.surahNumber || surahNum, nextItem.ayahNumber || nextItem.id, nextItem.id, true);
         } else {
           setIsPlayingAudio(false);
           setPlayingAyah(null);
@@ -427,17 +430,51 @@ function App() {
     }
   };
 
-  const handleSelectJuz = (juz) => {
-    // Sama seperti surah, ini adalah placeholder untuk demo.
-    setSelectedLearnItem({
-      type: 'juz',
-      data: {
-        surah: juz.title,
-        ayat_range: `Halaman ${juz.page}`,
-        text: [{ id: 1, arabic: `Ini adalah konten untuk ${juz.title}.`, indo: "Konten ayat-ayat untuk juz ini akan ditambahkan segera."}]
-      }
-    });
+  const handleSelectJuz = async (juz) => {
     setActiveTab('learn');
+    setIsLoadingLearnData(true);
+    
+    try {
+      const resAr = await fetch(`https://api.alquran.cloud/v1/juz/${juz.id}/quran-uthmani`);
+      if (!resAr.ok) throw new Error("Gagal mengambil data Arab Juz");
+      const dataAr = await resAr.json();
+
+      const resId = await fetch(`https://api.alquran.cloud/v1/juz/${juz.id}/id.indonesian`);
+      if (!resId.ok) throw new Error("Gagal mengambil data Terjemahan Juz");
+      const dataId = await resId.json();
+
+      const ayahsAr = dataAr.data.ayahs;
+      const ayahsId = dataId.data.ayahs;
+
+      const formattedText = ayahsAr.map((a, index) => ({
+        id: index + 1, // ID unik global 1 s/d N untuk list
+        ayahNumber: a.numberInSurah, // Nomor asli ayat
+        surahNumber: a.surah.number, // Nomor asli surah
+        surahName: a.surah.englishName,
+        arabic: a.text,
+        indo: ayahsId[index].text
+      }));
+
+      setSelectedLearnItem({
+        type: 'juz',
+        data: {
+          surah: juz.title,
+          surahNumber: 1, // Placeholder
+          ayat_range: `Total ${formattedText.length} Ayat`,
+          verses: formattedText.length,
+          text: formattedText
+        }
+      });
+      
+      setAyahStart(1);
+      setAyahEnd(formattedText.length);
+    } catch (err) {
+      console.error("Error Detail:", err);
+      alert("Gagal mengambil data Juz. Coba lagi nanti.");
+      setActiveTab('quran');
+    } finally {
+      setIsLoadingLearnData(false);
+    }
   };
 
   const handleStopSetoran = async () => {
@@ -704,7 +741,7 @@ function App() {
                   </p>
                 </div>
                 <button 
-                  onClick={() => displayedText.length > 0 && handlePlayAyah(surahNumber, displayedText[0].id, true)}
+                  onClick={() => displayedText.length > 0 && handlePlayAyah(displayedText[0].surahNumber || surahNumber, displayedText[0].ayahNumber || displayedText[0].id, displayedText[0].id, true)}
                   className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${isAutoplay && isPlayingAudio ? 'bg-red-100 text-red-600 scale-105' : 'bg-green-600 text-white shadow-md hover:bg-green-700'}`}
                 >
                   {isAutoplay && isPlayingAudio ? <Pause size={18} /> : <Play size={18} />}
@@ -769,10 +806,10 @@ function App() {
                     {displayedText.map(item => (
                       <span 
                         key={item.id} 
-                        onClick={() => handlePlayAyah(surahNumber, item.id)}
+                        onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)}
                         className={`cursor-pointer transition-colors p-1 rounded-lg ${playingAyah === item.id ? 'bg-green-100 text-green-800 shadow-sm' : 'hover:bg-gray-50'}`}
                       >
-                        {item.arabic} <span className="text-green-600 font-sans text-xl mx-1 select-none">﴿{item.id}﴾</span>
+                        {item.arabic} <span className="text-green-600 font-sans text-xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
                       </span>
                     ))}
                   </p>
@@ -782,7 +819,7 @@ function App() {
                   {displayedText.map(item => (
                     <div 
                       key={item.id} 
-                      onClick={() => handlePlayAyah(surahNumber, item.id)}
+                      onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)}
                       className={`space-y-3 p-4 rounded-2xl cursor-pointer transition-all border ${playingAyah === item.id ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-50'}`}
                     >
                       <div className="flex items-start gap-4 justify-between">
@@ -790,15 +827,22 @@ function App() {
                           <button className={`p-2 rounded-full ${playingAyah === item.id ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:text-green-600'}`}>
                              {playingAyah === item.id ? <Volume2 size={16} className="animate-pulse" /> : <Play size={16} />}
                           </button>
-                          <button onClick={(e) => handleDownloadAyah(surahNumber, item.id, e)} className="p-2 rounded-full bg-blue-50 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors shadow-sm" title="Download MP3">
+                          <button onClick={(e) => handleDownloadAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, e)} className="p-2 rounded-full bg-blue-50 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors shadow-sm" title="Download MP3">
                              <Download size={14} />
                           </button>
                         </div>
                         <p className="text-right text-3xl leading-loose font-serif text-gray-800" dir="rtl">
-                          {item.arabic} <span className="text-green-600 font-sans text-xl">﴿{item.id}﴾</span>
+                          {item.arabic} <span className="text-green-600 font-sans text-xl">﴿{item.ayahNumber || item.id}﴾</span>
                         </p>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed font-medium italic bg-white p-3 rounded-xl border border-gray-100">{item.indo}</p>
+                      <div>
+                        {item.surahName && (
+                          <span className="text-[9px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded uppercase tracking-wider mb-1 inline-block">
+                            {item.surahName} : {item.ayahNumber}
+                          </span>
+                        )}
+                        <p className="text-xs text-gray-500 leading-relaxed font-medium italic bg-white p-3 rounded-xl border border-gray-100">{item.indo}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1112,8 +1156,14 @@ function App() {
 
       case 'admin':
         if (!currentUser || !currentUser.isAdmin) {
-          setActiveTab('home');
-          return null;
+          return (
+            <div className="p-4 flex flex-col items-center justify-center h-full min-h-[400px] text-center space-y-4">
+              <AlertCircle size={48} className="text-red-500" />
+              <h2 className="text-2xl font-black text-gray-800">Akses Ditolak</h2>
+              <p className="text-sm text-gray-500">Anda tidak memiliki izin membuka halaman khusus Admin ini.</p>
+              <button onClick={() => setActiveTab('home')} className="mt-4 px-6 py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700">Kembali ke Beranda</button>
+            </div>
+          );
         }
         
         return (
@@ -1148,8 +1198,8 @@ function App() {
                          </span>
                        </div>
                        <div className="pt-2 border-t border-gray-50 flex justify-between items-center mt-1">
-                         <a href={`https://wa.me/${u.whatsapp.replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="text-xs font-bold text-green-600 flex items-center gap-1 hover:underline">
-                           <MessageCircle size={14}/> {u.whatsapp}
+                         <a href={`https://wa.me/${(u.whatsapp || '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="text-xs font-bold text-green-600 flex items-center gap-1 hover:underline">
+                           <MessageCircle size={14}/> {u.whatsapp || 'Tidak ada WA'}
                          </a>
                          <p className="text-[10px] text-gray-400">{new Date(u.created_at).toLocaleDateString('id-ID')}</p>
                        </div>
