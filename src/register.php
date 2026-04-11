@@ -9,12 +9,12 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 // Tangkap data JSON dari React
 $data = json_decode(file_get_contents("php://input"));
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($data->username)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($data->username) && !empty($data->password)) {
     // ================================================================
     // TODO: GANTI DENGAN KREDENSIAL DATABASE HOSTINGER BOS!
     // ================================================================
     $host = "localhost";
-    $db_name = "u123456789_tahfidz"; // Ganti dengan nama database bos
+    $db_name = "u829486010_h5bER"; // Ganti dengan nama database bos
     $username = "u123456789_user";   // Ganti dengan user database bos
     $password = "PasswordKuat123!";  // Ganti dengan password database bos
     // ================================================================
@@ -23,13 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($data->username)) {
         $conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $username, $password);
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $query = "INSERT INTO users (fullname, username, whatsapp, email, gender, dob, domicile, infaq_choice) 
-                  VALUES (:fullname, :username, :whatsapp, :email, :gender, :dob, :domicile, :infaq_choice)";
+        $query = "INSERT INTO users (fullname, username, password, whatsapp, email, gender, dob, domicile, infaq_choice) 
+                  VALUES (:fullname, :username, :password, :whatsapp, :email, :gender, :dob, :domicile, :infaq_choice)";
         
         $stmt = $conn->prepare($query);
         
+        // Enkripsi Password sebelum disimpan
+        $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
+        
         $stmt->bindParam(":fullname", $data->fullname);
         $stmt->bindParam(":username", $data->username);
+        $stmt->bindParam(":password", $hashed_password);
         $stmt->bindParam(":whatsapp", $data->whatsapp);
         $stmt->bindParam(":email", $data->email);
         $stmt->bindParam(":gender", $data->gender);

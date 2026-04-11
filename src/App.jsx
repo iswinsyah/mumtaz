@@ -1141,7 +1141,7 @@ function App() {
                   e.preventDefault();
                   const fd = new FormData(e.target);
                   const inputUsername = fd.get('username');
-                  const inputCredential = fd.get('whatsapp');
+                  const inputCredential = fd.get('password');
                   
                   // Jalur Khusus Super Admin
                   if (inputUsername === 'winsyah' && inputCredential === 'Khilafet@1924') {
@@ -1157,7 +1157,7 @@ function App() {
                       const res = await fetch('/api/login.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: inputUsername, whatsapp: inputCredential })
+                        body: JSON.stringify({ username: inputUsername, password: inputCredential })
                       });
                       const result = await res.json();
                       
@@ -1184,9 +1184,9 @@ function App() {
                     <input name="username" type="text" required placeholder="Masukkan username" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WA / Password Admin</label>
+                    <label className="text-xs font-bold text-gray-600 ml-1">Password</label>
                     <div className="relative">
-                      <input name="whatsapp" type={showPassword ? "text" : "password"} required placeholder="Masukkan WA / Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                      <input name="password" type={showPassword ? "text" : "password"} required placeholder="Masukkan Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                       <button 
                         type="button" 
                         onClick={() => setShowPassword(!showPassword)} 
@@ -1215,6 +1215,7 @@ function App() {
                   const userData = {
                     fullname: fd.get('fullname'),
                     username: fd.get('username'),
+                    password: fd.get('password'),
                     whatsapp: fd.get('whatsapp'),
                     email: fd.get('email'),
                     gender: fd.get('gender'),
@@ -1255,9 +1256,18 @@ function App() {
                       <input name="username" type="text" required placeholder="Panggilan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600 ml-1">WhatsApp</label>
-                      <input name="whatsapp" type="tel" required placeholder="08xxx" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                      <label className="text-xs font-bold text-gray-600 ml-1">Password</label>
+                      <div className="relative">
+                        <input name="password" type={showPassword ? "text" : "password"} required placeholder="Katasandi" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-10 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-600 p-1 transition-colors">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WhatsApp</label>
+                    <input name="whatsapp" type="tel" required placeholder="Contoh: 08123456789" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-600 ml-1">Email</label>
