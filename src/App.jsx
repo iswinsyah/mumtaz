@@ -504,10 +504,6 @@ function App() {
          }, 800);
       }
 
-      if (result.score >= 95) {
-        setTimeout(() => setShowSedekah(true), 1500);
-      }
-
       // Tambahkan hitungan pemakaian jika belum login
       if (!currentUser) {
         setFreeUsageCount(prev => prev + 1);
@@ -551,7 +547,7 @@ function App() {
                 <div className="bg-white/20 w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Sponsor Ad</div>
                 <h3 className="font-bold text-lg">Wakaf Quran untuk Pelosok</h3>
                 <p className="text-xs text-green-100">Bantu 1000 santri di pedalaman mendapatkan Mushaf baru.</p>
-                <button className="mt-2 bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
+                <button onClick={() => setShowSedekah(true)} className="mt-2 bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
                   <DollarSign size={14} /> Beri Kontribusi
                 </button>
               </div>
