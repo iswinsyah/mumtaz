@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($data->username) && !empty($
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Cari user berdasarkan username saja
-        $query = "SELECT fullname, username, password, infaq_choice FROM users WHERE username = :username LIMIT 1";
+        $query = "SELECT fullname, username, password, infaq_choice, avatar FROM users WHERE username = :username LIMIT 1";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(":username", $data->username);
         $stmt->execute();
@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($data->username) && !empty($
                     "user" => array(
                         "name" => $row['fullname'],
                         "username" => $row['username'],
-                        "isPremium" => ($row['infaq_choice'] > 0) ? true : false
+                        "isPremium" => ($row['infaq_choice'] > 0) ? true : false,
+                        "avatar" => $row['avatar']
                     )
                 ));
             } else {

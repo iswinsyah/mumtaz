@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText, Eye, EyeOff
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -110,6 +110,8 @@ function App() {
   const [authMode, setAuthMode] = useState('login'); // 'login' atau 'signup'
   const [showPassword, setShowPassword] = useState(false); // Toggle lihat password
   const [expandedTajwid, setExpandedTajwid] = useState(null); // State accordion tajwid
+  const [adminUsers, setAdminUsers] = useState([]); // Data user untuk dashboard admin
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(false); // Loading dashboard admin
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -131,13 +133,44 @@ function App() {
     localStorage.setItem('freeUsageCount', freeUsageCount.toString());
   }, [freeUsageCount]);
 
+  // Ambil data user untuk Dashboard Admin
+  useEffect(() => {
+    if (activeTab === 'admin') {
+      setIsLoadingAdmin(true);
+      fetch('/api/get_users.php')
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === 'success') setAdminUsers(result.data);
+          setIsLoadingAdmin(false);
+        })
+        .catch(err => {
+          console.error("Gagal load data admin:", err);
+          setIsLoadingAdmin(false);
+        });
+    }
+  }, [activeTab]);
+
   // Handler untuk memproses foto yang diupload
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCurrentUser(prev => ({ ...prev, avatar: reader.result }));
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+        setCurrentUser(prev => ({ ...prev, avatar: base64String }));
+        
+        // Simpan permanen ke database jika bukan guest/admin lokal
+        if (currentUser && !currentUser.isAdmin) {
+          try {
+            await fetch('/api/update_avatar.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: currentUser.username, avatar: base64String })
+            });
+          } catch (err) {
+            console.error("Gagal menyimpan foto ke server:", err);
+          }
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -1022,6 +1055,14 @@ function App() {
                 </p>
              </div>
 
+             {currentUser.isAdmin && (
+               <div className="mt-4">
+                  <button onClick={() => setActiveTab('admin')} className="w-full bg-gray-900 text-yellow-500 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:bg-gray-800 active:scale-95 transition-all">
+                    👑 Buka Dashboard Admin
+                  </button>
+               </div>
+             )}
+
              <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white p-3 rounded-2xl border border-gray-100">
                    <p className="text-xl font-black text-green-700">12</p>
@@ -1035,6 +1076,56 @@ function App() {
                    <p className="text-xl font-black text-green-700">2</p>
                    <p className="text-[10px] font-bold text-gray-400 uppercase">Juz Mutqin</p>
                 </div>
+             </div>
+          </div>
+        );
+
+      case 'admin':
+        if (!currentUser || !currentUser.isAdmin) {
+          setActiveTab('home');
+          return null;
+        }
+        
+        return (
+          <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
+             <div className="flex items-center justify-between mb-4">
+               <h1 className="text-2xl font-black text-gray-800 tracking-tight">Dashboard Admin</h1>
+               <button onClick={() => setActiveTab('profile')} className="text-sm font-bold text-gray-600 px-4 py-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">Tutup</button>
+             </div>
+             
+             <div className="bg-gray-900 rounded-2xl p-5 text-white shadow-lg space-y-2">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Pendaftar</p>
+                <div className="flex items-center gap-3">
+                  <Users size={32} className="text-yellow-500" />
+                  <span className="text-4xl font-black text-yellow-500">{adminUsers.length}</span>
+                </div>
+             </div>
+
+             <div className="space-y-3 mt-4">
+                <h2 className="font-bold text-gray-700">Daftar Pengguna</h2>
+                {isLoadingAdmin ? (
+                  <p className="text-center text-sm text-gray-500 py-10">Memuat data pengguna...</p>
+                ) : (
+                  adminUsers.map((u, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                       <div className="flex justify-between items-start">
+                         <div>
+                           <p className="font-bold text-gray-800">{u.fullname}</p>
+                           <p className="text-xs text-gray-500">@{u.username} • {u.domicile}</p>
+                         </div>
+                         <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${u.infaq_choice > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                           {u.infaq_choice > 0 ? 'Premium' : 'Free'}
+                         </span>
+                       </div>
+                       <div className="pt-2 border-t border-gray-50 flex justify-between items-center mt-1">
+                         <a href={`https://wa.me/${u.whatsapp.replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="text-xs font-bold text-green-600 flex items-center gap-1 hover:underline">
+                           <MessageCircle size={14}/> {u.whatsapp}
+                         </a>
+                         <p className="text-[10px] text-gray-400">{new Date(u.created_at).toLocaleDateString('id-ID')}</p>
+                       </div>
+                    </div>
+                  ))
+                )}
              </div>
           </div>
         );
@@ -1299,7 +1390,8 @@ function App() {
                         setCurrentUser({ 
                           name: result.user.name, 
                           username: result.user.username, 
-                          isPremium: result.user.isPremium 
+                          isPremium: result.user.isPremium,
+                          avatar: result.user.avatar // Ambil avatar dari database
                         });
                         setShowAuthModal(false);
                       } else {
