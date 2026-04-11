@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -54,11 +54,13 @@ function App() {
   const [freeUsageCount, setFreeUsageCount] = useState(() => parseInt(localStorage.getItem('freeUsageCount') || '0'));
   const [showAuthModal, setShowAuthModal] = useState(false); // Menampilkan layar login/daftar
   const [authMode, setAuthMode] = useState('login'); // 'login' atau 'signup'
+  const [showPassword, setShowPassword] = useState(false); // Toggle lihat password
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
   const audioRef = useRef(null);
   const ustadzAudioRef = useRef(null);
+  const fileInputRef = useRef(null); // Ref untuk elemen upload foto
 
   // Bersihkan audio saat komponen tertutup atau pindah tab
   useEffect(() => {
@@ -73,6 +75,18 @@ function App() {
   useEffect(() => {
     localStorage.setItem('freeUsageCount', freeUsageCount.toString());
   }, [freeUsageCount]);
+
+  // Handler untuk memproses foto yang diupload
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCurrentUser(prev => ({ ...prev, avatar: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
     // Jika ayat yang sama diklik saat sedang play, maka pause
@@ -843,11 +857,25 @@ function App() {
                 </button>
              </div>
              <div className="relative mx-auto w-32 h-32">
-                <div className="w-24 h-24 bg-green-200 rounded-[2rem] mx-auto overflow-hidden border-4 border-white shadow-lg">
-                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`} alt="profile" />
+                <div 
+                  className="w-24 h-24 bg-green-200 rounded-[2rem] mx-auto overflow-hidden border-4 border-white shadow-lg cursor-pointer group relative"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Klik untuk ubah foto"
+                >
+                   <img 
+                     src={currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`} 
+                     alt="profile" 
+                     className="w-full h-full object-cover"
+                   />
+                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-[10px] font-bold tracking-widest uppercase">Ubah Foto</span>
+                   </div>
                 </div>
+                {/* Input file disembunyikan, dipanggil via onClick di atas */}
+                <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
+                
                 {currentUser.isPremium && (
-                  <div className="absolute bottom-2 right-4 bg-yellow-500 text-white p-1.5 rounded-full border-4 border-white shadow-sm">
+                  <div className="absolute bottom-2 right-4 bg-yellow-500 text-white p-1.5 rounded-full border-4 border-white shadow-sm pointer-events-none">
                      <Star size={16} fill="currentColor" />
                   </div>
                 )}
@@ -1094,7 +1122,7 @@ function App() {
             <div className="flex justify-center pt-4 pb-2 shrink-0">
                <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
             </div>
-            <button onClick={() => setShowAuthModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
+            <button onClick={() => {setShowAuthModal(false); setShowPassword(false);}} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
 
             <div className="px-6 pb-2 shrink-0">
               <h3 className="text-2xl font-black text-gray-800 tracking-tight">
@@ -1157,13 +1185,22 @@ function App() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-600 ml-1">Nomor WA / Password Admin</label>
-                    <input name="whatsapp" type="password" required placeholder="Masukkan WA / Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                    <div className="relative">
+                      <input name="whatsapp" type={showPassword ? "text" : "password"} required placeholder="Masukkan WA / Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPassword(!showPassword)} 
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-600 p-1 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
                     Masuk Sekarang
                   </button>
                   <p className="text-center text-xs text-gray-500 pt-4">
-                    Belum punya akun? <button type="button" onClick={() => setAuthMode('signup')} className="font-bold text-green-600 underline">Daftar di sini</button>
+                    Belum punya akun? <button type="button" onClick={() => {setAuthMode('signup'); setShowPassword(false);}} className="font-bold text-green-600 underline">Daftar di sini</button>
                   </p>
                 </form>
               ) : (
@@ -1278,7 +1315,7 @@ function App() {
                     Daftar & Lanjutkan
                   </button>
                   <p className="text-center text-xs text-gray-500 pt-3 pb-4">
-                    Sudah punya akun? <button type="button" onClick={() => setAuthMode('login')} className="font-bold text-green-600 underline">Masuk di sini</button>
+                    Sudah punya akun? <button type="button" onClick={() => {setAuthMode('login'); setShowPassword(false);}} className="font-bold text-green-600 underline">Masuk di sini</button>
                   </p>
                 </form>
               )}
