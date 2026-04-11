@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -553,6 +553,23 @@ function App() {
               </div>
               <Heart className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={120} />
             </div>
+
+              {/* Promosi Web Yayasan / Sekolah */}
+              <a href="https://villaquranbaronmalang.com" target="_blank" rel="noreferrer" className="block bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:border-green-300 transition-all group relative overflow-hidden cursor-pointer active:scale-95">
+                <div className="flex gap-4 items-center">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-200 shrink-0 relative">
+                    <img src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=300&q=80" alt="Villa Quran" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="bg-green-100 text-green-700 w-fit px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">Penerimaan Santri Baru</div>
+                    <h3 className="font-bold text-sm text-gray-800 leading-tight">Pesantren Villa Quran Baron Malang</h3>
+                    <p className="text-[10px] text-gray-500 leading-tight line-clamp-2">Cetak generasi Qur'ani berakhlak mulia dan bersanad. Klik untuk info selengkapnya.</p>
+                  </div>
+                  <div className="shrink-0 text-gray-300 group-hover:text-green-500 transition-colors pr-2">
+                    <ExternalLink size={20} />
+                  </div>
+                </div>
+              </a>
 
             {/* Social Media Feed for Hufadz */}
             <h2 className="font-bold text-gray-700 px-2 pt-2">Kabar Hufadz</h2>
