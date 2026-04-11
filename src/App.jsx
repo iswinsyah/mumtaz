@@ -24,6 +24,39 @@ const MOCK_QURAN = {
 
 const APP_VERSION = "1.3.0"; // Versi Premium Voice (WaveNet)
 
+const TAJWID_LESSONS = [
+  {
+    id: 'nun_mati',
+    title: 'Hukum Nun Mati & Tanwin',
+    desc: 'Aturan baca Nun Sukun (نْ) atau Tanwin (ـً ـٍ ـٌ)',
+    content: "1. Izhar Halqi: Dibaca jelas (ء, ه, ع, ح, غ, خ)\n2. Idgham Bighunnah: Masuk dengan dengung (ي, ن, م, و)\n3. Idgham Bilaghunnah: Masuk tanpa dengung (ل, ر)\n4. Iqlab: Berubah jadi suara Mim (ب)\n5. Ikhfa Haqiqi: Samar & mendengung (15 huruf sisanya)"
+  },
+  {
+    id: 'mim_mati',
+    title: 'Hukum Mim Mati',
+    desc: 'Aturan baca Mim Sukun (مْ) bertemu huruf hijaiyah',
+    content: "1. Ikhfa Syafawi: Dibaca samar berdengung di bibir (ب)\n2. Idgham Mimi: Masuk berdengung (م)\n3. Izhar Syafawi: Dibaca jelas di bibir (Selain م dan ب)"
+  },
+  {
+    id: 'mad',
+    title: 'Hukum Mad (Panjang)',
+    desc: 'Aturan memanjangkan suara pada huruf-huruf tertentu',
+    content: "1. Mad Thabi'i: Panjang 2 harakat (Huruf Alif, Wawu sukun, Ya' sukun).\n2. Mad Wajib Muttasil: Mad Thabi'i bertemu hamzah dalam 1 kata (4-5 harakat).\n3. Mad Jaiz Munfasil: Mad Thabi'i bertemu hamzah beda kata (2-5 harakat).\n4. Mad Aridh Lissukun: Mad dibaca saat waqaf/berhenti (2, 4, 6 harakat).\n5. Mad Lazim: Mad bertemu huruf bertasydid (6 harakat)."
+  },
+  {
+    id: 'makhraj',
+    title: 'Makharijul Huruf',
+    desc: 'Tempat keluarnya huruf-huruf hijaiyah',
+    content: "1. Al-Jauf (Rongga Mulut): Tempat keluarnya huruf Mad.\n2. Al-Halq (Tenggorokan): Bawah (ء, ه), Tengah (ع, ح), Atas (غ, خ).\n3. Al-Lisan (Lidah): Terbanyak, 18 huruf (Qof, Kaf, Jim, dll).\n4. Asy-Syafatain (Bibir): Fa, Wawu, Ba, Mim.\n5. Al-Khaisyum (Hidung): Tempat keluarnya suara Ghunnah/Dengung."
+  },
+  {
+    id: 'qalqalah',
+    title: 'Hukum Qalqalah',
+    desc: 'Pantulan suara saat huruf tertentu disukunkan',
+    content: "Huruf Qalqalah: ق, ط, ب, ج, د (Baju Ditoko)\n\n1. Qalqalah Sugra (Kecil): Huruf mati di tengah kalimat. Pantulan ringan.\n2. Qalqalah Kubra (Besar): Huruf mati karena diwaqafkan (berhenti) di akhir ayat. Pantulan lebih kuat."
+  }
+];
+
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
   const [sessionState, setSessionState] = useState('idle');
@@ -55,6 +88,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false); // Menampilkan layar login/daftar
   const [authMode, setAuthMode] = useState('login'); // 'login' atau 'signup'
   const [showPassword, setShowPassword] = useState(false); // Toggle lihat password
+  const [expandedTajwid, setExpandedTajwid] = useState(null); // State accordion tajwid
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
@@ -473,6 +507,38 @@ function App() {
             ))}
           </div>
         );
+        
+      case 'tajwid':
+        return (
+          <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
+             <h1 className="text-2xl font-black text-gray-800 tracking-tight">Ilmu Tajwid</h1>
+             <p className="text-sm text-gray-500">Pelajari ringkasan dasar ilmu tajwid sebelum mulai menyetorkan hafalan Anda.</p>
+             
+             <div className="space-y-3 mt-4">
+               {TAJWID_LESSONS.map(lesson => (
+                  <div key={lesson.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all">
+                     <button 
+                       onClick={() => setExpandedTajwid(expandedTajwid === lesson.id ? null : lesson.id)}
+                       className="w-full p-4 flex justify-between items-center text-left bg-white hover:bg-green-50 transition-colors"
+                     >
+                        <div>
+                           <h3 className="font-bold text-green-800">{lesson.title}</h3>
+                           <p className="text-[10px] text-gray-500 mt-0.5">{lesson.desc}</p>
+                        </div>
+                        <ChevronRight className={`text-green-600 transition-transform duration-300 ${expandedTajwid === lesson.id ? 'rotate-90' : ''}`} size={20} />
+                     </button>
+                     {expandedTajwid === lesson.id && (
+                       <div className="p-4 pt-0 border-t border-gray-100 bg-green-50/30">
+                          <div className="text-[12px] text-gray-700 leading-loose whitespace-pre-line font-medium">
+                             {lesson.content}
+                          </div>
+                       </div>
+                     )}
+                  </div>
+               ))}
+             </div>
+          </div>
+        );
 
       case 'learn': {
         // Tampilkan loading spinner saat data sedang diambil dari API
@@ -495,7 +561,7 @@ function App() {
         return (
           <div className="p-4 pb-24 space-y-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-gray-800">Mode Belajar</h1>
+              <h1 className="text-xl font-bold text-gray-800">Mode Talaqqi</h1>
               <div className="flex gap-2">
                  <select 
                    value={selectedQari}
@@ -1360,9 +1426,9 @@ function App() {
           <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Sosial</span>
         </button>
-        <button onClick={() => setActiveTab('learn')} className={`flex flex-col items-center transition-all ${activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <BookOpen size={22} fill={activeTab === 'learn' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Belajar</span>
+        <button onClick={() => setActiveTab('tajwid')} className={`flex flex-col items-center transition-all ${activeTab === 'tajwid' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
+          <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} />
+          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Tajwid</span>
         </button>
         
         {/* Floating Center Mic Button */}
@@ -1373,8 +1439,8 @@ function App() {
           </button>
         </div>
 
-        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <List size={22} fill={activeTab === 'quran' ? "currentColor" : "none"} />
+        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' || activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
+          <List size={22} fill={activeTab === 'quran' || activeTab === 'learn' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Daftar Surah</span>
         </button>
         <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
