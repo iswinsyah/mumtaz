@@ -1131,12 +1131,46 @@ function App() {
                   </p>
                 </form>
               ) : (
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                   e.preventDefault();
                   const fd = new FormData(e.target);
-                  setCurrentUser({ name: fd.get('fullname'), username: fd.get('username'), isPremium: true });
-                  setShowAuthModal(false);
-                  alert("Alhamdulillah, pendaftaran berhasil! Silakan nikmati akses fitur At Tahfidz. (Sistem Payment Gateway akan segera diaktifkan)");
+                  const submitBtn = e.target.querySelector('button[type="submit"]');
+                  const originalText = submitBtn.innerText;
+                  submitBtn.innerText = "⏳ Sedang Mendaftar...";
+                  submitBtn.disabled = true;
+                  
+                  const userData = {
+                    fullname: fd.get('fullname'),
+                    username: fd.get('username'),
+                    whatsapp: fd.get('whatsapp'),
+                    email: fd.get('email'),
+                    gender: fd.get('gender'),
+                    dob: fd.get('dob'),
+                    domicile: fd.get('domicile'),
+                    infaq: fd.get('infaq')
+                  };
+
+                  try {
+                    const res = await fetch('/api/register.php', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(userData)
+                    });
+                    const result = await res.json();
+                    
+                    if (result.status === 'success') {
+                      setCurrentUser({ name: userData.fullname, username: userData.username, isPremium: true });
+                      setShowAuthModal(false);
+                      alert("Alhamdulillah, pendaftaran berhasil! Data telah tersimpan di Database.");
+                    } else {
+                      alert("Gagal mendaftar: " + result.message);
+                    }
+                  } catch (err) {
+                    alert("Gagal terhubung ke server database Hostinger. Pastikan Anda mencobanya di website live, bukan di lokal.");
+                  } finally {
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                  }
                 }} className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-600 ml-1">Nama Lengkap</label>
