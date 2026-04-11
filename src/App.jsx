@@ -831,16 +831,35 @@ function App() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-gray-800">Siap Menghafal?</h2>
-                  <p className="text-sm text-gray-500 max-w-xs">AI akan menyimak bacaanmu tanpa menampilkan teks. Fokus pada makhraj dan kelancaran.</p>
+                <div className="space-y-2 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Siap Mulai?</h2>
+                  <p className="text-sm text-gray-500 max-w-xs px-4">
+                    {setoranMode === 'tahfidz' 
+                      ? 'AI akan menyimak hafalanmu (teks disembunyikan). Fokus pada makhraj dan kelancaran.' 
+                      : 'AI akan menyimak bacaanmu (teks ditampilkan). Fokus pada makhraj dan tajwid.'}
+                  </p>
+                </div>
+
+                <div className="flex bg-gray-100 p-1 rounded-xl w-full max-w-[240px]">
+                  <button 
+                    onClick={() => setSetoranMode('tahfidz')}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${setoranMode === 'tahfidz' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Tahfidz (Hafalan)
+                  </button>
+                  <button 
+                    onClick={() => setSetoranMode('tahsin')}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${setoranMode === 'tahsin' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Tahsin (Baca)
+                  </button>
                 </div>
 
                 <button 
                   onClick={handleStartSetoran}
                   className="w-full bg-green-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-green-100 active:scale-95 transition-all"
                 >
-                  Mulai Setoran Sekarang
+                  {setoranMode === 'tahfidz' ? 'Mulai Setoran Sekarang' : 'Mulai Tahsin Sekarang'}
                 </button>
               </div>
             )}
@@ -851,34 +870,64 @@ function App() {
                    <div className="flex gap-1.5">
                       {[1,2,3].map(i => <div key={i} className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>)}
                    </div>
-                   <p className="text-[10px] tracking-widest uppercase font-black text-gray-500">Layar Blind Mode Aktif</p>
+                   <p className="text-[10px] tracking-widest uppercase font-black text-gray-500">
+                     {setoranMode === 'tahfidz' ? 'Layar Blind Mode Aktif' : 'Layar Tahsin Aktif'}
+                   </p>
                 </div>
                 
-                <div className="flex items-center gap-1.5 h-32">
-                  {[...Array(14)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="w-1.5 bg-green-400 rounded-full animate-bounce"
-                      style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.4 + Math.random()}s` }}
-                    ></div>
-                  ))}
-                </div>
+                {setoranMode === 'tahsin' ? (
+                  <div className="w-full mt-20 mb-6 flex-1 overflow-y-auto pr-2">
+                    <p className="text-[26px] leading-[2.2] font-serif text-gray-100 text-right" dir="rtl">
+                      {(() => {
+                        const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
+                        return currentLearnData.text
+                          .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
+                          .map(item => (
+                            <span key={item.id}>
+                              {item.arabic} <span className="text-green-400 font-sans text-xl mx-1 select-none">﴿{item.id}﴾</span>
+                            </span>
+                          ));
+                      })()}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 h-32 mt-12">
+                    {[...Array(14)].map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="w-1.5 bg-green-400 rounded-full animate-bounce"
+                        style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.4 + Math.random()}s` }}
+                      ></div>
+                    ))}
+                  </div>
+                )}
                 
-                <div className="text-center mt-12 space-y-1">
+                <div className={`text-center ${setoranMode === 'tahsin' ? 'mt-0' : 'mt-12'} space-y-1 mb-16`}>
+                  {setoranMode === 'tahsin' && (
+                    <div className="flex justify-center items-center gap-1.5 h-8 mb-4">
+                      {[...Array(8)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="w-1 bg-green-400 rounded-full animate-bounce"
+                          style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.4 + Math.random()}s` }}
+                        ></div>
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xl font-bold tracking-tight">AI Sedang Menyimak...</p>
                   <p className="text-xs text-gray-400">
                     Lantunkan {selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}: 
                     {selectedLearnItem?.type === 'juz' ? selectedLearnItem.data.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`}
                   </p>
-                  <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4 h-4">{transcript || "Menunggu suara..."}</p>
+                  <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4 h-4 mx-auto">{transcript || "Menunggu suara..."}</p>
                 </div>
 
                 <div className="absolute bottom-12 w-full px-8">
                    <button 
                     onClick={handleStopSetoran}
-                    className="w-full py-4 border border-white/20 rounded-2xl text-xs font-bold uppercase tracking-widest text-white bg-red-600/20 hover:bg-red-600/40"
+                    className="w-full py-4 border border-white/20 rounded-2xl text-xs font-bold uppercase tracking-widest text-white bg-red-600/20 hover:bg-red-600/40 backdrop-blur-sm"
                    >
-                     Berhenti Setoran
+                     Berhenti {setoranMode === 'tahfidz' ? 'Setoran' : 'Tahsin'}
                    </button>
                 </div>
               </div>
