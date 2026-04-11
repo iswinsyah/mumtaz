@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
-  ChevronRight, Volume2, MessageCircle, X, List
+  ChevronRight, Volume2, MessageCircle, X, List,
+  LogOut, LogIn, Lock
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -48,6 +49,12 @@ function App() {
   const [recordedAudioUrl, setRecordedAudioUrl] = useState(null); // URL untuk memutar rekaman sendiri
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
+  // --- STATE OTENTIKASI & LIMITASI ---
+  const [currentUser, setCurrentUser] = useState(null); // Menyimpan data user yg login
+  const [freeUsageCount, setFreeUsageCount] = useState(() => parseInt(localStorage.getItem('freeUsageCount') || '0'));
+  const [showAuthModal, setShowAuthModal] = useState(false); // Menampilkan layar login/daftar
+  const [authMode, setAuthMode] = useState('login'); // 'login' atau 'signup'
+
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
   const audioRef = useRef(null);
@@ -61,6 +68,11 @@ function App() {
       if (window.speechSynthesis) window.speechSynthesis.cancel(); // Hentikan suara AI jika ganti tab
     };
   }, [activeTab]);
+
+  // Simpan riwayat hitungan pemakaian gratis ke penyimpanan browser (localStorage)
+  useEffect(() => {
+    localStorage.setItem('freeUsageCount', freeUsageCount.toString());
+  }, [freeUsageCount]);
 
   const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
     // Jika ayat yang sama diklik saat sedang play, maka pause
@@ -216,6 +228,13 @@ function App() {
   };
 
   const handleStartSetoran = () => {
+    // Cek Limit Penggunaan Gratis
+    if (!currentUser && freeUsageCount >= 3) {
+      setAuthMode('signup');
+      setShowAuthModal(true);
+      return; // Hentikan sebelum merekam
+    }
+    
     setSessionState('recording');
     setRecordedAudioUrl(null);
     startListening();
@@ -360,6 +379,11 @@ function App() {
 
       if (result.score >= 95) {
         setTimeout(() => setShowSedekah(true), 1500);
+      }
+
+      // Tambahkan hitungan pemakaian jika belum login
+      if (!currentUser) {
+        setFreeUsageCount(prev => prev + 1);
       }
     } catch (err) {
       // Tampilkan pesan error aslinya agar kita tahu penyebab pastinya
@@ -787,20 +811,53 @@ function App() {
       }
 
       case 'profile':
+        if (!currentUser) {
+          return (
+            <div className="p-4 pb-24 flex flex-col items-center justify-center h-full min-h-[500px] space-y-6">
+               <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 mb-2">
+                  <User size={48} />
+               </div>
+               <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-black text-gray-800">Tamu / Guest</h2>
+                  <p className="text-sm text-gray-500 max-w-[280px] mx-auto leading-relaxed">
+                    Anda sedang mencoba mode gratis. Sisa kuota cek setoran AI: <b className="text-green-600">{Math.max(0, 3 - freeUsageCount)}x</b>
+                  </p>
+               </div>
+               <div className="w-full max-w-[280px] space-y-3 mt-4">
+                  <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all">
+                    <LogIn size={18} /> Masuk Akun
+                  </button>
+                  <button onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }} className="w-full bg-white text-green-700 border-2 border-green-200 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all">
+                    Daftar Akun Baru
+                  </button>
+               </div>
+            </div>
+          );
+        }
+
         return (
           <div className="p-4 pb-24 text-center space-y-6">
-             <div className="relative mx-auto w-32 h-32 pt-8">
+             <div className="flex justify-end pt-2">
+                <button onClick={() => setCurrentUser(null)} className="text-red-500 bg-red-50 p-2.5 rounded-full hover:bg-red-100 transition-colors" title="Keluar">
+                   <LogOut size={18} />
+                </button>
+             </div>
+             <div className="relative mx-auto w-32 h-32">
                 <div className="w-24 h-24 bg-green-200 rounded-[2rem] mx-auto overflow-hidden border-4 border-white shadow-lg">
-                   <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmad" alt="profile" />
+                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`} alt="profile" />
                 </div>
-                <div className="absolute bottom-2 right-4 bg-green-600 text-white p-1.5 rounded-full border-4 border-white">
-                   <Award size={16} />
-                </div>
+                {currentUser.isPremium && (
+                  <div className="absolute bottom-2 right-4 bg-yellow-500 text-white p-1.5 rounded-full border-4 border-white shadow-sm">
+                     <Star size={16} fill="currentColor" />
+                  </div>
+                )}
              </div>
              
              <div className="space-y-1">
-                <h2 className="text-2xl font-black text-gray-800">Ahmad Syarif</h2>
-                <p className="text-sm text-gray-500 font-medium">Pegawai Swasta • Hufadz Sejak 2024</p>
+                <h2 className="text-2xl font-black text-gray-800">{currentUser.name}</h2>
+                <p className="text-sm text-gray-500 font-medium">
+                  @{currentUser.username} • {currentUser.isPremium ? 'Member Aktif' : 'Free Member'}
+                </p>
              </div>
 
              <div className="grid grid-cols-3 gap-3">
@@ -1028,6 +1085,137 @@ function App() {
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {renderTabContent()}
       </div>
+
+      {/* Auth Modal (Login / Signup) */}
+      {showAuthModal && (
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[150] flex flex-col justify-end sm:justify-center animate-in fade-in duration-300">
+          <div className="bg-white w-full max-h-[90%] sm:rounded-3xl rounded-t-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-500">
+            
+            <div className="flex justify-center pt-4 pb-2 shrink-0">
+               <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+            </div>
+            <button onClick={() => setShowAuthModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
+
+            <div className="px-6 pb-2 shrink-0">
+              <h3 className="text-2xl font-black text-gray-800 tracking-tight">
+                {authMode === 'login' ? 'Selamat Datang' : 'Gabung At Tahfidz'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+                {authMode === 'login' 
+                  ? 'Lanjutkan perjalanan menghafalmu hari ini.' 
+                  : 'Daftar sekarang untuk buka akses evaluasi AI tanpa batas.'}
+              </p>
+            </div>
+
+            <div className="overflow-y-auto px-6 pb-8 pt-4 flex-1">
+              {authMode === 'login' ? (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.target);
+                  setCurrentUser({ name: "Hamba Allah", username: fd.get('username'), isPremium: true });
+                  setShowAuthModal(false);
+                }} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Username</label>
+                    <input name="username" type="text" required placeholder="Masukkan username" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WhatsApp</label>
+                    <input name="whatsapp" type="tel" required placeholder="Contoh: 08123456789" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                  </div>
+                  <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
+                    Masuk Sekarang
+                  </button>
+                  <p className="text-center text-xs text-gray-500 pt-4">
+                    Belum punya akun? <button type="button" onClick={() => setAuthMode('signup')} className="font-bold text-green-600 underline">Daftar di sini</button>
+                  </p>
+                </form>
+              ) : (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.target);
+                  setCurrentUser({ name: fd.get('fullname'), username: fd.get('username'), isPremium: true });
+                  setShowAuthModal(false);
+                  alert("Alhamdulillah, pendaftaran berhasil! Silakan nikmati akses fitur At Tahfidz. (Sistem Payment Gateway akan segera diaktifkan)");
+                }} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Nama Lengkap</label>
+                    <input name="fullname" type="text" required placeholder="Sesuai Tanda Pengenal" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600 ml-1">Username</label>
+                      <input name="username" type="text" required placeholder="Panggilan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600 ml-1">WhatsApp</label>
+                      <input name="whatsapp" type="tel" required placeholder="08xxx" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Email</label>
+                    <input name="email" type="email" required placeholder="Alamat Email Aktif" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600 ml-1">Jenis Kelamin</label>
+                      <select name="gender" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all">
+                        <option value="">Pilih...</option>
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600 ml-1">Tanggal Lahir</label>
+                      <input name="dob" type="date" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 ml-1">Domisili</label>
+                    <input name="domicile" type="text" required placeholder="Contoh: Jakarta Selatan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                  </div>
+
+                  <div className="space-y-2 pt-2 pb-2">
+                    <label className="text-xs font-bold text-green-700 ml-1 flex items-center gap-1"><Lock size={12}/> Pilihan Infaq Akses (Bulanan)</label>
+                    <select name="infaq" required className="w-full bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all font-semibold">
+                      <option value="100000">💎 Donatur - Rp 100.000 (Subsidi User Lain)</option>
+                      <option value="50000">🌟 Premium - Rp 50.000 (Bebas Limit)</option>
+                      <option value="25000">⭐ Standar - Rp 25.000 (Bebas Limit)</option>
+                      <option value="15000">✨ Pelajar - Rp 15.000 (Bebas Limit)</option>
+                      <option value="0">⏳ Lewati & Coba Dulu (Bebas Akses)</option>
+                    </select>
+                  </div>
+
+                  <div className="bg-green-50/50 border border-green-100 p-3.5 rounded-xl mt-2 mb-4 shadow-sm">
+                    <h4 className="text-[11px] font-black text-green-800 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
+                      <Heart size={12} className="text-green-600" /> Ketentuan & Alokasi Infaq
+                    </h4>
+                    <div className="text-[10px] text-gray-600 leading-relaxed space-y-1.5">
+                      <p>1. Dengan mendaftar, Anda menyetujui penggunaan wajar aplikasi At Tahfidz.</p>
+                      <p>2. Seluruh dana infaq yang terkumpul akan dialokasikan murni untuk:</p>
+                      <ul className="list-disc pl-4 font-bold text-gray-700">
+                        <li>Biaya operasional server AI Google.</li>
+                        <li>Wakaf Pembangunan Pesantren Villa Quran.</li>
+                      </ul>
+                    </div>
+                    <label className="flex items-start gap-2 cursor-pointer mt-3 pt-3 border-t border-green-100">
+                      <input type="checkbox" required className="mt-0.5 w-3.5 h-3.5 accent-green-600 rounded cursor-pointer" />
+                      <span className="text-[10px] font-bold text-gray-700 leading-tight">Saya setuju dengan ketentuan di atas dan berniat infaq lillahi ta'ala.</span>
+                    </label>
+                  </div>
+
+                  <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
+                    Daftar & Lanjutkan
+                  </button>
+                  <p className="text-center text-xs text-gray-500 pt-3 pb-4">
+                    Sudah punya akun? <button type="button" onClick={() => setAuthMode('login')} className="font-bold text-green-600 underline">Masuk di sini</button>
+                  </p>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Syukur/Sedekah Modal */}
       {showSedekah && (
