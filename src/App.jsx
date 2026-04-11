@@ -41,7 +41,7 @@ function App() {
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
   const [aiAudio, setAiAudio] = useState(null); // Audio Premium dari AI
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
-  const [setoranMode, setSetoranMode] = useState('tahfidz'); // Mode: 'tahfidz' (Blind) atau 'tahsin' (Baca)
+  const [setoranMode, setSetoranMode] = useState('tahsin'); // Mode: 'tahfidz' (Blind) atau 'tahsin' (Baca)
   const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
   const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
   const [isMushafMode, setIsMushafMode] = useState(false); // Toggle mode mushaf
@@ -840,16 +840,16 @@ function App() {
                   </p>
                 </div>
 
-                <div className="flex bg-gray-100 p-1 rounded-xl w-full max-w-[240px]">
+                <div className="flex bg-green-50 p-1.5 rounded-2xl w-full max-w-[300px] border-2 border-green-100 shadow-inner">
                   <button 
                     onClick={() => setSetoranMode('tahfidz')}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${setoranMode === 'tahfidz' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 py-3 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${setoranMode === 'tahfidz' ? 'bg-green-600 text-white shadow-lg shadow-green-200 scale-105' : 'text-green-700 hover:bg-green-200/50'}`}
                   >
                     Tahfidz (Hafalan)
                   </button>
                   <button 
                     onClick={() => setSetoranMode('tahsin')}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${setoranMode === 'tahsin' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 py-3 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${setoranMode === 'tahsin' ? 'bg-green-600 text-white shadow-lg shadow-green-200 scale-105' : 'text-green-700 hover:bg-green-200/50'}`}
                   >
                     Tahsin (Baca)
                   </button>
