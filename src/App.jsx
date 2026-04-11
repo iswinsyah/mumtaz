@@ -41,6 +41,7 @@ function App() {
   const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
   const [aiAudio, setAiAudio] = useState(null); // Audio Premium dari AI
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
+  const [setoranMode, setSetoranMode] = useState('tahfidz'); // Mode: 'tahfidz' (Blind) atau 'tahsin' (Baca)
   const [isCopied, setIsCopied] = useState(false); // Indikator copy hasil
   const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
   const [isMushafMode, setIsMushafMode] = useState(false); // Toggle mode mushaf
@@ -597,7 +598,7 @@ function App() {
               onClick={() => setActiveTab('setor')}
               className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"
             >
-              <Mic size={20} /> Mulai Setoran (Blind Mode)
+              <Mic size={20} /> Mulai Setoran / Tahsin
             </button>
           </div>
         );
