@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -201,11 +201,9 @@ function App() {
     newAudio.play();
   };
 
-  const handlePlayAyah = (surahNum, ayahNum, listId = null, autoNext = false) => {
-    const targetId = listId || ayahNum;
-
+  const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
     // Jika ayat yang sama diklik saat sedang play, maka pause
-    if (playingAyah === targetId && isPlayingAudio) {
+    if (playingAyah === ayahNum && isPlayingAudio) {
       audioRef.current?.pause();
       setIsPlayingAudio(false);
       setPlayingAyah(null);
@@ -225,15 +223,14 @@ function App() {
     const newAudio = new Audio(audioUrl);
     audioRef.current = newAudio;
     
-    newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(targetId); };
+    newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(ayahNum); };
     newAudio.onended = () => { 
       if (autoNext) {
         const currentList = playlistRef.current;
-        const currentIndex = currentList.findIndex(a => a.id === targetId);
+        const currentIndex = currentList.findIndex(a => a.id === ayahNum);
         if (currentIndex !== -1 && currentIndex + 1 < currentList.length) {
           // Jika masih ada ayat selanjutnya, putar otomatis
-          const nextItem = currentList[currentIndex + 1];
-          handlePlayAyah(nextItem.surahNumber || surahNum, nextItem.ayahNumber || nextItem.id, nextItem.id, true);
+          handlePlayAyah(surahNum, currentList[currentIndex + 1].id, true);
         } else {
           setIsPlayingAudio(false);
           setPlayingAyah(null);
@@ -430,51 +427,17 @@ function App() {
     }
   };
 
-  const handleSelectJuz = async (juz) => {
+  const handleSelectJuz = (juz) => {
+    // Sama seperti surah, ini adalah placeholder untuk demo.
+    setSelectedLearnItem({
+      type: 'juz',
+      data: {
+        surah: juz.title,
+        ayat_range: `Halaman ${juz.page}`,
+        text: [{ id: 1, arabic: `Ini adalah konten untuk ${juz.title}.`, indo: "Konten ayat-ayat untuk juz ini akan ditambahkan segera."}]
+      }
+    });
     setActiveTab('learn');
-    setIsLoadingLearnData(true);
-    
-    try {
-      const resAr = await fetch(`https://api.alquran.cloud/v1/juz/${juz.id}/quran-uthmani`);
-      if (!resAr.ok) throw new Error("Gagal mengambil data Arab Juz");
-      const dataAr = await resAr.json();
-
-      const resId = await fetch(`https://api.alquran.cloud/v1/juz/${juz.id}/id.indonesian`);
-      if (!resId.ok) throw new Error("Gagal mengambil data Terjemahan Juz");
-      const dataId = await resId.json();
-
-      const ayahsAr = dataAr.data.ayahs;
-      const ayahsId = dataId.data.ayahs;
-
-      const formattedText = ayahsAr.map((a, index) => ({
-        id: index + 1, // ID unik global 1 s/d N untuk list
-        ayahNumber: a.numberInSurah, // Nomor asli ayat
-        surahNumber: a.surah.number, // Nomor asli surah
-        surahName: a.surah.englishName,
-        arabic: a.text,
-        indo: ayahsId[index].text
-      }));
-
-      setSelectedLearnItem({
-        type: 'juz',
-        data: {
-          surah: juz.title,
-          surahNumber: 1, // Placeholder
-          ayat_range: `Total ${formattedText.length} Ayat`,
-          verses: formattedText.length,
-          text: formattedText
-        }
-      });
-      
-      setAyahStart(1);
-      setAyahEnd(formattedText.length);
-    } catch (err) {
-      console.error("Error Detail:", err);
-      alert("Gagal mengambil data Juz. Coba lagi nanti.");
-      setActiveTab('quran');
-    } finally {
-      setIsLoadingLearnData(false);
-    }
   };
 
   const handleStopSetoran = async () => {
@@ -741,7 +704,7 @@ function App() {
                   </p>
                 </div>
                 <button 
-                  onClick={() => displayedText.length > 0 && handlePlayAyah(displayedText[0].surahNumber || surahNumber, displayedText[0].ayahNumber || displayedText[0].id, displayedText[0].id, true)}
+                  onClick={() => displayedText.length > 0 && handlePlayAyah(surahNumber, displayedText[0].id, true)}
                   className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${isAutoplay && isPlayingAudio ? 'bg-red-100 text-red-600 scale-105' : 'bg-green-600 text-white shadow-md hover:bg-green-700'}`}
                 >
                   {isAutoplay && isPlayingAudio ? <Pause size={18} /> : <Play size={18} />}
@@ -806,10 +769,10 @@ function App() {
                     {displayedText.map(item => (
                       <span 
                         key={item.id} 
-                        onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)}
+                        onClick={() => handlePlayAyah(surahNumber, item.id)}
                         className={`cursor-pointer transition-colors p-1 rounded-lg ${playingAyah === item.id ? 'bg-green-100 text-green-800 shadow-sm' : 'hover:bg-gray-50'}`}
                       >
-                        {item.arabic} <span className="text-green-600 font-sans text-xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
+                        {item.arabic} <span className="text-green-600 font-sans text-xl mx-1 select-none">﴿{item.id}﴾</span>
                       </span>
                     ))}
                   </p>
@@ -819,7 +782,7 @@ function App() {
                   {displayedText.map(item => (
                     <div 
                       key={item.id} 
-                      onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)}
+                      onClick={() => handlePlayAyah(surahNumber, item.id)}
                       className={`space-y-3 p-4 rounded-2xl cursor-pointer transition-all border ${playingAyah === item.id ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-50'}`}
                     >
                       <div className="flex items-start gap-4 justify-between">
@@ -827,22 +790,15 @@ function App() {
                           <button className={`p-2 rounded-full ${playingAyah === item.id ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:text-green-600'}`}>
                              {playingAyah === item.id ? <Volume2 size={16} className="animate-pulse" /> : <Play size={16} />}
                           </button>
-                          <button onClick={(e) => handleDownloadAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, e)} className="p-2 rounded-full bg-blue-50 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors shadow-sm" title="Download MP3">
+                          <button onClick={(e) => handleDownloadAyah(surahNumber, item.id, e)} className="p-2 rounded-full bg-blue-50 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors shadow-sm" title="Download MP3">
                              <Download size={14} />
                           </button>
                         </div>
                         <p className="text-right text-3xl leading-loose font-serif text-gray-800" dir="rtl">
-                          {item.arabic} <span className="text-green-600 font-sans text-xl">﴿{item.ayahNumber || item.id}﴾</span>
+                          {item.arabic} <span className="text-green-600 font-sans text-xl">﴿{item.id}﴾</span>
                         </p>
                       </div>
-                      <div>
-                        {item.surahName && (
-                          <span className="text-[9px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded uppercase tracking-wider mb-1 inline-block">
-                            {item.surahName} : {item.ayahNumber}
-                          </span>
-                        )}
-                        <p className="text-xs text-gray-500 leading-relaxed font-medium italic bg-white p-3 rounded-xl border border-gray-100">{item.indo}</p>
-                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed font-medium italic bg-white p-3 rounded-xl border border-gray-100">{item.indo}</p>
                     </div>
                   ))}
                 </div>
@@ -866,54 +822,71 @@ function App() {
         );
       }
 
-      case 'juz':
+      case 'rapot':
         return (
-          <div className="p-4 pb-24 space-y-4">
-             <h1 className="text-xl font-bold text-gray-800">Progres Mutqin</h1>
+          <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
+             <div className="flex items-center justify-between mb-2">
+               <h1 className="text-2xl font-black text-gray-800 tracking-tight">Rapot & Riwayat</h1>
+               <button onClick={() => setActiveTab('profile')} className="text-sm font-bold text-green-600 px-4 py-1.5 bg-green-50 rounded-full hover:bg-green-100 transition-colors">Kembali</button>
+             </div>
              
-             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex items-center gap-6">
-                <div className="relative w-24 h-24 shrink-0">
-                   <svg className="w-full h-full transform -rotate-90">
-                      <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-100" />
-                      <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-green-600" strokeDasharray="263.8" strokeDashoffset="52.7" />
-                   </svg>
-                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="font-black text-xl leading-none">80%</span>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Selesai</span>
-                   </div>
+             {/* Banner Info Sanad */}
+             <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+                <div className="relative z-10 space-y-1.5">
+                  <div className="bg-yellow-500 text-green-900 w-fit px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1"><Star size={10}/> Jalur Sanad</div>
+                  <h3 className="font-bold text-lg leading-tight">Ujian Ustadz Bersanad</h3>
+                  <p className="text-xs text-green-100 leading-relaxed max-w-[90%]">
+                    Untuk membuka kesempatan ujian langsung dengan Ustadz Manusia, Anda wajib mendapatkan predikat <b className="text-yellow-400">Mumtaz (Skor ≥ 95)</b> secara kumulatif pada Juz tersebut dari evaluasi AI.
+                  </p>
                 </div>
-                <div className="space-y-1">
-                   <p className="font-black text-lg text-gray-800 leading-tight">Juz 30 (Amma)</p>
-                   <p className="text-xs text-gray-500 font-medium">24 dari 30 Surah Lulus AI</p>
-                   <div className="pt-2 flex gap-1">
-                      {[1,2,3,4,5].map(i => <Star key={i} size={14} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-100"} />)}
-                   </div>
-                </div>
+                <Award className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={120} />
              </div>
 
-             <div className="flex justify-between items-center px-1 pt-2">
-                <h2 className="font-bold text-gray-700">Daftar Juz Hafalan</h2>
-                <button className="text-[10px] font-bold text-green-600 uppercase">Lihat Semua</button>
+             <div className="flex justify-between items-center px-1 pt-3">
+                <h2 className="font-bold text-gray-700">Riwayat Setoran Per Juz</h2>
              </div>
              
-             {[30, 29, 28, 27].map(juz => (
-               <div key={juz} className="bg-white p-4 rounded-2xl border border-gray-100 flex justify-between items-center group active:bg-green-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${juz === 30 ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                       {juz}
+             <div className="space-y-3">
+               {[
+                 { juz: 30, score: 96, label: 'Mumtaz', status: 'Lulus', mode: 'Tahfidz' },
+                 { juz: 29, score: 88, label: 'Jayyid Jiddan', status: 'Lulus', mode: 'Tahsin' },
+                 { juz: 28, score: 0, status: 'Berjalan', progress: '45%', mode: 'Tahsin' },
+                 { juz: 27, score: 0, status: 'Belum', mode: '-' },
+               ].map(item => (
+                 <div key={item.juz} className={`p-4 rounded-2xl border flex flex-col gap-3 group transition-colors shadow-sm ${item.score >= 95 ? 'bg-yellow-50/50 border-yellow-200' : 'bg-white border-gray-100'}`}>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${item.score >= 95 ? 'bg-green-600 text-white' : (item.score > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400')}`}>
+                           {item.juz}
+                        </div>
+                        <div>
+                          <p className="font-black text-gray-800">Juz {item.juz}</p>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            {item.mode !== '-' && <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">{item.mode}</span>}
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                              {item.status === 'Lulus' ? `Skor AI: ${item.score}` : (item.status === 'Berjalan' ? `Progres: ${item.progress}` : 'Belum Mulai')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                         {item.score >= 95 ? (
+                           <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-1 rounded font-black uppercase tracking-wider flex items-center gap-1"><CheckCircle size={10}/> Mumtaz</span>
+                         ) : (
+                           item.score > 0 ? (
+                             <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-wider">{item.label}</span>
+                           ) : null
+                         )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-800">Juz {juz}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{juz === 30 ? 'Siap Talaqqi' : 'Tahap Mandiri'}</p>
-                    </div>
-                  </div>
-                  {juz === 30 ? (
-                    <button className="bg-yellow-500 text-green-900 text-[10px] px-3 py-2 rounded-xl font-black uppercase tracking-wider shadow-sm">Ujian Ustadz</button>
-                  ) : (
-                    <ChevronRight className="text-gray-300" />
-                  )}
-               </div>
-             ))}
+                    {item.score >= 95 && (
+                      <button className="w-full mt-2 bg-yellow-500 text-green-900 text-xs py-3 rounded-xl font-black uppercase tracking-wider shadow-md hover:bg-yellow-400 active:scale-95 transition-all flex justify-center items-center gap-2">
+                        <User size={14}/> Daftar Ujian Ustadz (Sanad)
+                      </button>
+                    )}
+                 </div>
+               ))}
+             </div>
           </div>
         );
 
@@ -1251,7 +1224,7 @@ function App() {
                           .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
                           .map(item => (
                             <span key={item.id}>
-                              {item.arabic} <span className="text-green-400 font-sans text-xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
+                              {item.arabic} <span className="text-green-400 font-sans text-xl mx-1 select-none">﴿{item.id}﴾</span>
                             </span>
                           ));
                       })()}
