@@ -5,7 +5,7 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock
+  LogOut, LogIn, Lock, FileText
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
@@ -856,7 +856,7 @@ function App() {
              <div className="space-y-1">
                 <h2 className="text-2xl font-black text-gray-800">{currentUser.name}</h2>
                 <p className="text-sm text-gray-500 font-medium">
-                  @{currentUser.username} • {currentUser.isPremium ? 'Member Aktif' : 'Free Member'}
+                  @{currentUser.username} • {currentUser.isAdmin ? '👑 Super Admin' : (currentUser.isPremium ? 'Member Aktif' : 'Free Member')}
                 </p>
              </div>
 
@@ -1109,19 +1109,55 @@ function App() {
 
             <div className="overflow-y-auto px-6 pb-8 pt-4 flex-1">
               {authMode === 'login' ? (
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                   e.preventDefault();
                   const fd = new FormData(e.target);
-                  setCurrentUser({ name: "Hamba Allah", username: fd.get('username'), isPremium: true });
-                  setShowAuthModal(false);
+                  const inputUsername = fd.get('username');
+                  const inputCredential = fd.get('whatsapp');
+                  
+                  // Jalur Khusus Super Admin
+                  if (inputUsername === 'winsyah' && inputCredential === 'Khilafet@1924') {
+                    setCurrentUser({ name: "Iswinsyah", username: "winsyah", isPremium: true, isAdmin: true });
+                    setShowAuthModal(false);
+                  } else {
+                    const submitBtn = e.target.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerText;
+                    submitBtn.innerText = "⏳ Sedang Masuk...";
+                    submitBtn.disabled = true;
+
+                    try {
+                      const res = await fetch('/api/login.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: inputUsername, whatsapp: inputCredential })
+                      });
+                      const result = await res.json();
+                      
+                      if (result.status === 'success') {
+                        setCurrentUser({ 
+                          name: result.user.name, 
+                          username: result.user.username, 
+                          isPremium: result.user.isPremium 
+                        });
+                        setShowAuthModal(false);
+                      } else {
+                        alert("Gagal masuk: " + result.message);
+                      }
+                    } catch (err) {
+                      alert("Gagal terhubung ke server database Hostinger. Pastikan Anda mengakses via website live.");
+                    } finally {
+                      submitBtn.innerText = originalText;
+                      submitBtn.disabled = false;
+                    }
+                  }
                 }} className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-600 ml-1">Username</label>
                     <input name="username" type="text" required placeholder="Masukkan username" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WhatsApp</label>
-                    <input name="whatsapp" type="tel" required placeholder="Contoh: 08123456789" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WA / Password Admin</label>
+                    <input name="whatsapp" type="password" required placeholder="Masukkan WA / Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                   </div>
                   <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
                     Masuk Sekarang
