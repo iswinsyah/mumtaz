@@ -29,31 +29,52 @@ const TAJWID_LESSONS = [
     id: 'nun_mati',
     title: 'Hukum Nun Mati & Tanwin',
     desc: 'Aturan baca Nun Sukun (نْ) atau Tanwin (ـً ـٍ ـٌ)',
-    content: "1. Izhar Halqi: Dibaca jelas (ء, ه, ع, ح, غ, خ)\n2. Idgham Bighunnah: Masuk dengan dengung (ي, ن, م, و)\n3. Idgham Bilaghunnah: Masuk tanpa dengung (ل, ر)\n4. Iqlab: Berubah jadi suara Mim (ب)\n5. Ikhfa Haqiqi: Samar & mendengung (15 huruf sisanya)"
+    content: "1. Izhar Halqi: Dibaca jelas (ء, ه, ع, ح, غ, خ)\n2. Idgham Bighunnah: Masuk dengan dengung (ي, ن, م, و)\n3. Idgham Bilaghunnah: Masuk tanpa dengung (ل, ر)\n4. Iqlab: Berubah jadi suara Mim (ب)\n5. Ikhfa Haqiqi: Samar & mendengung (15 huruf sisanya)",
+    examples: [
+      { id: 'nun_1', text: "كُفُوًا أَحَدٌ", type: "Izhar Halqi (Tanwin + Alif)", surah: 112, ayah: 4, label: "Al-Ikhlas: 4" },
+      { id: 'nun_2', text: "مِن شَرِّ", type: "Ikhfa Haqiqi (Nun Sukun + Syin)", surah: 113, ayah: 2, label: "Al-Falaq: 2" }
+    ]
   },
   {
     id: 'mim_mati',
     title: 'Hukum Mim Mati',
     desc: 'Aturan baca Mim Sukun (مْ) bertemu huruf hijaiyah',
-    content: "1. Ikhfa Syafawi: Dibaca samar berdengung di bibir (ب)\n2. Idgham Mimi: Masuk berdengung (م)\n3. Izhar Syafawi: Dibaca jelas di bibir (Selain م dan ب)"
+    content: "1. Ikhfa Syafawi: Dibaca samar berdengung di bibir (ب)\n2. Idgham Mimi: Masuk berdengung (م)\n3. Izhar Syafawi: Dibaca jelas di bibir (Selain م dan ب)",
+    examples: [
+      { id: 'mim_1', text: "تَرْمِيهِم بِحِجَارَةٍ", type: "Ikhfa Syafawi", surah: 105, ayah: 4, label: "Al-Fil: 4" },
+      { id: 'mim_2', text: "أَطْعَمَهُم مِّن جُوعٍ", type: "Idgham Mimi", surah: 106, ayah: 4, label: "Quraish: 4" },
+      { id: 'mim_3', text: "لَمْ يَلِدْ وَلَمْ يُولَدْ", type: "Izhar Syafawi", surah: 112, ayah: 3, label: "Al-Ikhlas: 3" }
+    ]
   },
   {
     id: 'mad',
     title: 'Hukum Mad (Panjang)',
     desc: 'Aturan memanjangkan suara pada huruf-huruf tertentu',
-    content: "1. Mad Thabi'i: Panjang 2 harakat (Huruf Alif, Wawu sukun, Ya' sukun).\n2. Mad Wajib Muttasil: Mad Thabi'i bertemu hamzah dalam 1 kata (4-5 harakat).\n3. Mad Jaiz Munfasil: Mad Thabi'i bertemu hamzah beda kata (2-5 harakat).\n4. Mad Aridh Lissukun: Mad dibaca saat waqaf/berhenti (2, 4, 6 harakat).\n5. Mad Lazim: Mad bertemu huruf bertasydid (6 harakat)."
+    content: "1. Mad Thabi'i: Panjang 2 harakat (Huruf Alif, Wawu sukun, Ya' sukun).\n2. Mad Wajib Muttasil: Mad Thabi'i bertemu hamzah dalam 1 kata (4-5 harakat).\n3. Mad Jaiz Munfasil: Mad Thabi'i bertemu hamzah beda kata (2-5 harakat).\n4. Mad Aridh Lissukun: Mad dibaca saat waqaf/berhenti (2, 4, 6 harakat).\n5. Mad Lazim: Mad bertemu huruf bertasydid (6 harakat).",
+    examples: [
+      { id: 'mad_1', text: "إِذَا جَآءَ", type: "Mad Wajib Muttasil", surah: 110, ayah: 1, label: "An-Nasr: 1" },
+      { id: 'mad_2', text: "فِى عَمَدٍ", type: "Mad Thabi'i (Ya Sukun)", surah: 104, ayah: 9, label: "Al-Humazah: 9" }
+    ]
   },
   {
     id: 'makhraj',
     title: 'Makharijul Huruf',
     desc: 'Tempat keluarnya huruf-huruf hijaiyah',
-    content: "1. Al-Jauf (Rongga Mulut): Tempat keluarnya huruf Mad.\n2. Al-Halq (Tenggorokan): Bawah (ء, ه), Tengah (ع, ح), Atas (غ, خ).\n3. Al-Lisan (Lidah): Terbanyak, 18 huruf (Qof, Kaf, Jim, dll).\n4. Asy-Syafatain (Bibir): Fa, Wawu, Ba, Mim.\n5. Al-Khaisyum (Hidung): Tempat keluarnya suara Ghunnah/Dengung."
+    content: "1. Al-Jauf (Rongga Mulut): Tempat keluarnya huruf Mad.\n2. Al-Halq (Tenggorokan): Bawah (ء, ه), Tengah (ع, ح), Atas (غ, خ).\n3. Al-Lisan (Lidah): Terbanyak, 18 huruf (Qof, Kaf, Jim, dll).\n4. Asy-Syafatain (Bibir): Fa, Wawu, Ba, Mim.\n5. Al-Khaisyum (Hidung): Tempat keluarnya suara Ghunnah/Dengung.",
+    examples: [
+      { id: 'makh_1', text: "خَلَقَ", type: "Tenggorokan Atas (Kha)", surah: 113, ayah: 2, label: "Al-Falaq: 2" },
+      { id: 'makh_2', text: "قُلْ أَعُوذُ", type: "Pangkal Lidah (Qof)", surah: 114, ayah: 1, label: "An-Nas: 1" }
+    ]
   },
   {
     id: 'qalqalah',
     title: 'Hukum Qalqalah',
     desc: 'Pantulan suara saat huruf tertentu disukunkan',
-    content: "Huruf Qalqalah: ق, ط, ب, ج, د (Baju Ditoko)\n\n1. Qalqalah Sugra (Kecil): Huruf mati di tengah kalimat. Pantulan ringan.\n2. Qalqalah Kubra (Besar): Huruf mati karena diwaqafkan (berhenti) di akhir ayat. Pantulan lebih kuat."
+    content: "Huruf Qalqalah: ق, ط, ب, ج, د (Baju Ditoko)\n\n1. Qalqalah Sugra (Kecil): Huruf mati di tengah kalimat. Pantulan ringan.\n2. Qalqalah Kubra (Besar): Huruf mati karena diwaqafkan (berhenti) di akhir ayat. Pantulan lebih kuat.",
+    examples: [
+      { id: 'qal_1', text: "ٱلْأَبْتَرُ", type: "Qalqalah Sugra (Ba Sukun)", surah: 108, ayah: 3, label: "Al-Kautsar: 3" },
+      { id: 'qal_2', text: "ٱلْفَلَقِ", type: "Qalqalah Kubra (Qof Waqaf)", surah: 113, ayah: 1, label: "Al-Falaq: 1" }
+    ]
   }
 ];
 
@@ -120,6 +141,31 @@ function App() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Handler khusus untuk memutar ayat contoh Tajwid
+  const handlePlayTajwid = (surahNum, ayahNum, id) => {
+    if (playingAyah === id && isPlayingAudio) {
+      audioRef.current?.pause();
+      setIsPlayingAudio(false);
+      setPlayingAyah(null);
+      return;
+    }
+
+    if (audioRef.current) audioRef.current.pause(); // Hentikan audio sebelumnya
+
+    const surahStr = String(surahNum).padStart(3, '0');
+    const ayahStr = String(ayahNum).padStart(3, '0');
+    const audioUrl = `https://everyayah.com/data/${selectedQari}/${surahStr}${ayahStr}.mp3`;
+
+    const newAudio = new Audio(audioUrl);
+    audioRef.current = newAudio;
+    
+    newAudio.onplay = () => { setIsPlayingAudio(true); setPlayingAyah(id); };
+    newAudio.onended = () => { setIsPlayingAudio(false); setPlayingAyah(null); };
+    newAudio.onerror = () => { alert("Maaf, audio belum tersedia untuk ayat ini."); setIsPlayingAudio(false); setPlayingAyah(null); };
+    
+    newAudio.play();
   };
 
   const handlePlayAyah = (surahNum, ayahNum, autoNext = false) => {
@@ -529,9 +575,31 @@ function App() {
                      </button>
                      {expandedTajwid === lesson.id && (
                        <div className="p-4 pt-0 border-t border-gray-100 bg-green-50/30">
-                          <div className="text-[12px] text-gray-700 leading-loose whitespace-pre-line font-medium">
+                          <div className="text-[12px] text-gray-700 leading-loose whitespace-pre-line font-medium mb-3">
                              {lesson.content}
                           </div>
+                          {lesson.examples && (
+                            <div className="space-y-2 mt-3 pt-3 border-t border-green-100">
+                              <p className="text-[10px] font-black text-green-700 uppercase tracking-widest flex items-center gap-1"><Volume2 size={12}/> Dengarkan Contoh Ayat</p>
+                              {lesson.examples.map(ex => (
+                                <button 
+                                  key={ex.id}
+                                  onClick={() => handlePlayTajwid(ex.surah, ex.ayah, ex.id)}
+                                  className="w-full flex items-center justify-between p-3 bg-white border border-green-200 rounded-xl hover:bg-green-100 active:scale-95 transition-all group shadow-sm"
+                                >
+                                  <div className="flex items-center gap-3 text-left">
+                                    <div className={`p-2.5 rounded-full shadow-sm transition-colors ${playingAyah === ex.id ? 'bg-green-600 text-white' : 'bg-green-50 text-green-600 group-hover:bg-green-200'}`}>
+                                      {playingAyah === ex.id ? <Volume2 size={16} className="animate-pulse" /> : <Play size={16} />}
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-gray-800 text-xs">{ex.type}</p>
+                                      <p className="text-[10px] text-gray-500 mt-0.5">{ex.label} <span className="font-serif text-sm ml-1.5 text-green-700">{ex.text}</span></p>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                        </div>
                      )}
                   </div>
@@ -1403,18 +1471,32 @@ function App() {
       {/* Syukur/Sedekah Modal */}
       {showSedekah && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end justify-center animate-in fade-in duration-300">
-          <div className="bg-white w-full rounded-t-[3rem] p-8 pb-12 space-y-6 animate-in slide-in-from-bottom duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.2)]">
+          <div className="bg-white w-full rounded-t-[3rem] p-8 pb-12 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] relative">
              <div className="flex justify-center">
                 <div className="w-16 h-1.5 bg-gray-100 rounded-full"></div>
              </div>
-             <button onClick={() => setShowSedekah(false)} className="absolute top-6 right-8 text-gray-300 hover:text-gray-600"><X size={24} /></button>
+             <button onClick={() => setShowSedekah(false)} className="absolute top-6 right-6 bg-gray-100 p-2 rounded-full text-gray-400 hover:text-gray-600"><X size={20} /></button>
              <div className="text-center space-y-3">
                 <div className="mx-auto w-24 h-24 bg-yellow-50 rounded-[2.5rem] flex items-center justify-center text-yellow-500 mb-2 rotate-3"><Heart size={48} fill="currentColor" /></div>
                 <h3 className="text-2xl font-black text-gray-800 tracking-tight">Wujudkan Rasa Syukur</h3>
-                <p className="text-sm text-gray-500 leading-relaxed px-4">Alhamdulillah, hafalanmu <b>{selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}</b> sangat lancar hari ini. Sempurnakan dengan sedekah?</p>
+                <p className="text-sm text-gray-500 leading-relaxed px-4">Alhamdulillah, hafalan <b>{selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}</b> sangat lancar. Mari sempurnakan dengan berwakaf untuk Pesantren Villa Quran.</p>
              </div>
-             <div className="grid grid-cols-1 gap-4 pt-2">
-                <button className="w-full bg-green-700 text-white py-5 rounded-[2rem] font-black text-lg shadow-xl shadow-green-100 flex items-center justify-center gap-3 hover:bg-green-800 transition-all"><DollarSign size={20} /> Sedekah Sekarang</button>
+             
+             <div className="bg-green-50 rounded-2xl p-4 border border-green-100 text-left mt-4 mb-2">
+               <p className="text-[11px] font-black text-green-800 mb-2 uppercase tracking-wider">💳 Transfer Rekening Resmi Yayasan</p>
+               <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-green-200 shadow-sm">
+                 <div>
+                   <p className="text-sm font-black text-gray-800">BSI (Bank Syariah Indonesia)</p>
+                   <p className="text-lg font-mono font-bold text-green-700 tracking-widest mt-0.5">7123456789</p>
+                   <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">a.n. Yayasan Pesantren Villa Quran</p>
+                 </div>
+                 <button onClick={() => { navigator.clipboard.writeText('7123456789'); alert('Nomor Rekening Yayasan berhasil disalin!'); }} className="p-3 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 active:scale-95 transition-all" title="Salin Rekening">
+                   <Copy size={20} />
+                 </button>
+               </div>
+             </div>
+             <div className="pt-2">
+                <a href="https://wa.me/6281234567890?text=Assalamu'alaikum,%20saya%20ingin%20konfirmasi%20transfer%20infaq/wakaf%20dari%20Aplikasi%20At%20Tahfidz." target="_blank" rel="noreferrer" className="w-full bg-green-600 text-white py-4 rounded-xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-green-700 active:scale-95 transition-all"><MessageCircle size={18} /> Konfirmasi Transfer via WA</a>
              </div>
           </div>
         </div>
