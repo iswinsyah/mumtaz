@@ -1224,7 +1224,7 @@ function App() {
                           .filter(t => t.id >= ayahStart && t.id <= ayahEnd)
                           .map(item => (
                             <span key={item.id}>
-                              {item.arabic} <span className="text-green-400 font-sans text-xl mx-1 select-none">﴿{item.id}﴾</span>
+                              {item.arabic} <span className="text-green-400 font-sans text-xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
                             </span>
                           ));
                       })()}
