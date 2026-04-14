@@ -1165,18 +1165,56 @@ function App() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Baca Teks Yang Menyala</p>
                     
-                    {/* GRID STEP BY STEP */}
-                    <div className="flex flex-wrap justify-center gap-3 mb-6" dir="rtl">
-                      {iqraSteps.map((step, idx) => {
+                    {/* GRID STEP BY STEP (ROWS & COLUMNS) */}
+                    <div className="flex flex-col gap-3 w-full mb-6" dir="rtl">
+                      {iqraSteps.map((row, idx) => {
                         const isActive = idx === currentIqraStep;
-                        let colorClass = "text-gray-300 bg-gray-50 border-gray-100"; // Terkunci (Abu-abu)
-                        if (step.status === 'correct') colorClass = "text-blue-600 bg-blue-50 border-blue-200 shadow-sm"; // Lulus (Biru)
-                        else if (step.status === 'wrong' && isActive) colorClass = "text-red-500 bg-red-50 border-red-200 animate-pulse"; // Salah (Merah)
-                        else if (isActive) colorClass = "text-gray-800 bg-white border-green-400 shadow-md transform scale-110"; // Sedang Aktif
+                        let colorClass = "text-gray-400 bg-gray-50 border-gray-100 opacity-60"; // Terkunci
+                        if (row.status === 'correct') colorClass = "text-blue-600 bg-blue-50 border-blue-200";
+                        else if (row.status === 'wrong' && isActive) colorClass = "text-red-500 bg-red-50 border-red-200 animate-pulse";
+                        else if (isActive) colorClass = "text-gray-900 bg-white border-green-400 shadow-md ring-4 ring-green-50 transform scale-[1.02] z-10";
 
                         return (
-                          <div key={idx} className={`px-4 py-3 rounded-2xl border-2 transition-all duration-300 text-5xl font-serif ${colorClass}`}>
-                            {step.word}
+                          <div key={idx} className={`flex items-center justify-between p-2 sm:p-3 rounded-2xl border-2 transition-all duration-300 ${colorClass}`}>
+                            {/* Kolom Kata (Maks 4 per baris) */}
+                            <div className="flex-1 grid grid-cols-4 gap-2 text-center">
+                              {row.words && row.words.map((word, wIdx) => (
+                                <div key={wIdx} className="text-3xl sm:text-4xl font-serif py-2 drop-shadow-sm">
+                                  {word}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Tombol Aksi per Baris */}
+                            <div className="flex flex-col items-center justify-center shrink-0 w-14 sm:w-16 border-r-2 border-gray-200/40 pr-2 mr-2 h-full min-h-[3rem]">
+                               {isActive && sessionState === 'idle' && (
+                                 <button onClick={handleStartSetoranIqra} className="w-10 h-10 rounded-full bg-green-500 text-white shadow-md hover:bg-green-600 active:scale-90 transition-all flex items-center justify-center">
+                                   <Mic size={20} />
+                                 </button>
+                               )}
+                               {isActive && sessionState === 'recording' && (
+                                 <button onClick={handleStopSetoranIqra} className="w-10 h-10 rounded-full bg-red-500 text-white shadow-md animate-pulse active:scale-90 transition-all flex items-center justify-center">
+                                   <div className="w-4 h-4 bg-white rounded-sm"></div>
+                                 </button>
+                               )}
+                               {isActive && sessionState === 'processing' && (
+                                 <div className="w-6 h-6 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                               )}
+                               {isActive && sessionState === 'wrong_feedback' && (
+                                 <button onClick={() => {
+                                     if (isSpeakingNote) { window.speechSynthesis.cancel(); if(ustadzAudioRef.current) ustadzAudioRef.current.pause(); setIsSpeakingNote(false); }
+                                     setSessionState('idle');
+                                 }} className="w-10 h-10 rounded-full bg-red-100 text-red-600 shadow-sm hover:bg-red-200 active:scale-90 transition-all flex items-center justify-center">
+                                   <Mic size={20} />
+                                 </button>
+                               )}
+                               {row.status === 'correct' && (
+                                 <CheckCircle size={28} className="text-blue-500 drop-shadow-sm" />
+                               )}
+                               {!isActive && row.status !== 'correct' && (
+                                 <Lock size={20} className="text-gray-300" />
+                               )}
+                            </div>
                           </div>
                         )
                       })}
@@ -1187,29 +1225,6 @@ function App() {
                        <p className="text-xs text-blue-700 leading-relaxed"><b>Tips Ustadz:</b> {selectedIqraLesson.note}</p>
                     </div>
                  </div>
-
-                 {sessionState === 'idle' && (
-                   <button onClick={handleStartSetoranIqra} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-2">
-                     <Mic size={24} /> Baca "{iqraSteps[currentIqraStep]?.word}"
-                   </button>
-                 )}
-                 {sessionState === 'recording' && (
-                   <div className="w-full space-y-4 text-center">
-                     <div className="flex justify-center items-center gap-1.5 h-12">
-                       {[...Array(8)].map((_, i) => (
-                         <div key={i} className="w-1.5 bg-red-500 rounded-full animate-bounce" style={{ height: `${40 + Math.random() * 60}%`, animationDuration: `${0.4 + Math.random()}s` }}></div>
-                       ))}
-                     </div>
-                     <p className="text-sm font-bold text-gray-600 animate-pulse">Ustadz sedang mendengarkan...</p>
-                     <button onClick={handleStopSetoranIqra} className="w-full py-4 border-2 border-red-100 bg-red-50 rounded-2xl text-red-600 font-bold uppercase tracking-widest hover:bg-red-100 transition-colors">Berhenti Rekam</button>
-                   </div>
-                 )}
-                 {sessionState === 'processing' && (
-                   <div className="text-center space-y-4">
-                     <div className="w-12 h-12 border-4 border-green-100 border-t-green-600 rounded-full animate-spin mx-auto"></div>
-                     <p className="text-sm font-bold text-gray-500">Menganalisis makhraj huruf...</p>
-                   </div>
-                 )}
                  {sessionState === 'wrong_feedback' && (
                    <div className="w-full bg-red-50 rounded-3xl p-6 border border-red-100 text-center space-y-4 animate-in zoom-in-95 duration-300">
                      <h3 className="text-lg font-black text-red-600">Skor: {score} - Belum Tepat</h3>
