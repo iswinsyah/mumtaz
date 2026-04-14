@@ -998,7 +998,7 @@ function App() {
               onClick={() => setActiveTab('setor')}
               className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"
             >
-              <Mic size={20} /> Mulai Setoran / Tahsin
+              <Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}
             </button>
           </div>
         );
@@ -1218,7 +1218,7 @@ function App() {
              </div>
            </button>
 
-           <button onClick={() => { setActiveTab('setor'); setSetoranMode('tahsin'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
+           <button onClick={() => { setActiveTab('quran'); setSetoranMode('tahsin'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
              <div className="w-14 h-14 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">2</div>
              <div>
                <h3 className="font-black text-gray-800 text-lg">Tahsin (Perbaikan)</h3>
@@ -1226,7 +1226,7 @@ function App() {
              </div>
            </button>
 
-           <button onClick={() => { setActiveTab('setor'); setSetoranMode('tahfidz'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
+           <button onClick={() => { setActiveTab('quran'); setSetoranMode('tahfidz'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
              <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">3</div>
              <div>
                <h3 className="font-black text-gray-800 text-lg">Tahfidz (Hafalan)</h3>
