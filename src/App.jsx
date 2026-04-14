@@ -1255,8 +1255,13 @@ function App() {
                  {selectedIqraJilid.lessons.map((lesson, idx) => (
                    <button key={lesson.id} onClick={() => { 
                      setSelectedIqraLesson(lesson); 
-                     // Pecah kata berdasarkan spasi otomatis jadi array step-by-step
-                     setIqraSteps(lesson.text.split(' ').filter(w => w.trim() !== '').map(w => ({ word: w, status: 'idle' })));
+                     // Pecah kata berdasarkan spasi, lalu kelompokkan 4 kata per 1 baris
+                     const words = lesson.text.split(' ').filter(w => w.trim() !== '');
+                     const rows = [];
+                     for (let i = 0; i < words.length; i += 4) {
+                       rows.push({ words: words.slice(i, i + 4), status: 'idle' });
+                     }
+                     setIqraSteps(rows);
                      setCurrentIqraStep(0);
                      setSessionState('idle'); 
                      setAiNote(''); 

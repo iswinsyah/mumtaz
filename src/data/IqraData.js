@@ -4,11 +4,11 @@ export const iqraData = [
     title: "Iqra Jilid 1",
     description: "Pengenalan Huruf Tunggal berharakat Fathah (A, Ba, Ta, dst). Dibaca pendek.",
     lessons: [
-      { id: "1_1", text: "أَ بَ", read: "a ba", note: "Buka mulut. Dibaca pendek dan cepat." },
-      { id: "1_2", text: "بَ أَ بَ", read: "ba a ba", note: "Perhatikan makhraj huruf Ba di bibir." },
-      { id: "1_3", text: "تَ أَ بَ", read: "ta a ba", note: "Huruf Ta titiknya dua di atas." },
-      { id: "1_4", text: "ثَ بَ تَ", read: "tsa ba ta", note: "Huruf Tsa ujung lidah digigit sedikit." },
-      { id: "1_5", text: "جَ حَ خَ", read: "ja ha kho", note: "Bedakan Ha (bersih) dan Kho (ngorok)." }
+      { id: "1_1", text: "أَ بَ تَ ثَ بَ أَ تَ ثَ ثَ تَ بَ أَ أَ تَ ثَ بَ أَ بَ تَ ثَ بَ أَ تَ ثَ", read: "a ba ta tsa", note: "Buka mulut. Dibaca pendek dan cepat berurutan." },
+      { id: "1_2", text: "جَ حَ خَ جَ حَ جَ خَ حَ خَ حَ جَ خَ جَ حَ خَ جَ حَ جَ خَ حَ خَ حَ جَ خَ", read: "ja ha kho", note: "Bedakan makhraj Ha (bersih) dan Kho (ngorok)." },
+      { id: "1_3", text: "دَ ذَ رَ زَ ذَ دَ زَ رَ رَ زَ دَ ذَ زَ رَ ذَ دَ دَ ذَ رَ زَ ذَ دَ زَ رَ", read: "da dza ro za", note: "Bedakan ujung lidah Dza dan desis Zai." },
+      { id: "1_4", text: "سَ شَ صَ ضَ شَ سَ ضَ صَ صَ ضَ سَ شَ ضَ صَ شَ سَ سَ شَ صَ ضَ شَ سَ ضَ صَ", read: "sa sya sho dho", note: "Perhatikan ketebalan suara Sho dan Dho." },
+      { id: "1_5", text: "طَ ظَ عَ غَ ظَ طَ غَ عَ عَ غَ طَ ظَ غَ عَ ظَ طَ طَ ظَ عَ غَ ظَ طَ غَ عَ", read: "tho dzo 'a gho", note: "Huruf Tho dan Dzo dibaca tebal dan ngangkat lidah." }
     ]
   },
   {
