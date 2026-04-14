@@ -699,32 +699,32 @@ function App() {
                 </div>
               </a>
 
-            {/* Social Media Feed for Hufadz */}
-            <h2 className="font-bold text-gray-700 px-2 pt-2">Kabar Hufadz</h2>
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-green-800 overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i === 1 ? 'Ahmad' : 'Siti'}`} alt="avatar" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-sm">{i === 1 ? 'Hamba Allah (Karyawan)' : 'Bunda Sarah'}</p>
-                    <p className="text-[10px] text-gray-400">Baru saja menyelesaikan Juz 30</p>
-                  </div>
-                  <div className="text-[10px] text-gray-500 italic">3 menit lalu</div>
+            {/* Social Media Feed for Hufadz (24 Hours Ephemeral) */}
+            <div className="flex justify-between items-center px-2 pt-2">
+              <h2 className="font-bold text-gray-700">Kabar Hufadz</h2>
+              <span className="text-[9px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">⏳ Live 24 Jam</span>
+            </div>
+            
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest flex items-center gap-1"><Award size={10}/> Mumtaz</div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-green-800 overflow-hidden">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmad" alt="avatar" />
                 </div>
-                <p className="text-sm text-gray-700">
-                  {i === 1 
-                    ? "Alhamdulillah, berkat fitur AI At Tahfidz jadi lebih percaya diri buat murajaah di kantor saat istirahat. Mumtaz!" 
-                    : "Masya Allah, fitur suaranya Ustadzah Humaira membantu sekali buat koreksi bacaan anak-anak di rumah. Jazakallah!"}
-                </p>
-                <div className="flex gap-4 pt-3 border-t border-gray-50">
-                  <button className="flex items-center gap-1.5 text-xs font-medium text-gray-500"><Heart size={14} /> 42</button>
-                  <button className="flex items-center gap-1.5 text-xs font-medium text-gray-500"><MessageCircle size={14} /> 8</button>
-                  <button className="flex items-center gap-1.5 text-xs font-medium text-gray-500"><Share2 size={14} /> Share</button>
+                <div className="flex-1 mt-1">
+                  <p className="font-bold text-sm leading-tight">Ahmad (Karyawan) <span className="text-xs">✨</span></p>
+                  <p className="text-[10px] text-green-600 font-bold mt-0.5">Berhasil lulus Tahfidz Juz 30</p>
                 </div>
+                <div className="text-[9px] text-gray-400 font-medium text-right leading-tight">2 jam lalu<br/><span className="text-red-400 font-bold">Hilang: 22j lagi</span></div>
               </div>
-            ))}
+              <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                "Alhamdulillah akhirnya bisa lulus Juz 30 setelah diulang 3x. Semangat terus buat teman-teman yang lagi ngafal di sela-sela jam kerja! 🔥🚀"
+              </p>
+              <div className="flex gap-5 pt-2">
+                <button className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors"><Heart size={16} /> 42</button>
+                <button className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue-500 transition-colors"><MessageCircle size={16} /> 12 Komentar</button>
+              </div>
+            </div>
           </div>
         );
         
