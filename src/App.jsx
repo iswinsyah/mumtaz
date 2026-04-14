@@ -670,17 +670,17 @@ function App() {
             </div>
 
             {/* Ethical Ads / Sponsorship Banner */}
-            <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+            <a href="https://www.bwa.id/" target="_blank" rel="noreferrer" className="block bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all">
               <div className="relative z-10 space-y-2">
                 <div className="bg-white/20 w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Sponsor Ad</div>
-                <h3 className="font-bold text-lg">Wakaf Quran untuk Pelosok</h3>
+                <h3 className="font-bold text-lg">Wakaf Al Quran dan Pembinaan</h3>
                 <p className="text-xs text-green-100">Bantu 1000 santri di pedalaman mendapatkan Mushaf baru.</p>
-                <button onClick={() => setShowSedekah(true)} className="mt-2 bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
+                <div className="mt-2 w-fit bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
                   <DollarSign size={14} /> Beri Kontribusi
-                </button>
+                </div>
               </div>
               <Heart className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={120} />
-            </div>
+            </a>
 
               {/* Promosi Web Yayasan / Sekolah */}
               <a href="https://villaquranbaronmalang.com" target="_blank" rel="noreferrer" className="block bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:border-green-300 transition-all group relative overflow-hidden cursor-pointer active:scale-95">
