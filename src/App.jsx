@@ -1231,7 +1231,6 @@ function App() {
 
                             {/* Tombol Aksi per Baris */}
                             <div className="flex flex-col items-center justify-center shrink-0 w-14 sm:w-16 border-r-2 border-gray-200/40 pr-2 mr-2 h-full min-h-[3rem]">
-                               {isActive && sessionState === 'idle' && (
                                {isActive && sessionState === 'idle' && row.status !== 'wrong' && (
                                  <button onClick={handleStartSetoranIqra} className="w-10 h-10 rounded-full bg-green-500 text-white shadow-md hover:bg-green-600 active:scale-90 transition-all flex items-center justify-center">
                                    <Mic size={20} />
