@@ -1869,6 +1869,10 @@ function App() {
           <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Tajwid</span>
         </button>
+        <button onClick={() => { setActiveTab('iqra'); setSelectedIqraLesson(null); setSelectedIqraJilid(null); }} className={`flex flex-col items-center transition-all ${activeTab === 'iqra' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
+          <Book size={22} fill={activeTab === 'iqra' ? "currentColor" : "none"} />
+          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Iqra</span>
+        </button>
         
         {/* Floating Center Mic Button */}
         <div className="relative -top-6">
