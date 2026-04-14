@@ -1302,7 +1302,7 @@ function App() {
                <div className="text-center space-y-2">
                   <h2 className="text-2xl font-black text-gray-800">Tamu / Guest</h2>
                   <p className="text-sm text-gray-500 max-w-[280px] mx-auto leading-relaxed">
-                    Anda sedang mencoba mode gratis. Sisa kuota cek setoran AI: <b className="text-green-600">{Math.max(0, 3 - freeUsageCount)}x</b>
+                    Anda sedang menggunakan <b>Mode Demo Premium</b>. Akses fitur AI dibuka tanpa batas (Unlimited).
                   </p>
                </div>
                <div className="w-full max-w-[280px] space-y-3 mt-4">
