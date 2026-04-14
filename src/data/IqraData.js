@@ -1,7 +1,7 @@
 export const iqraData = [
   {
     jilid: 1,
-    title: "Iqra Jilid 1",
+    title: "Tilawah Tahap 1",
     description: "Pengenalan Huruf Tunggal berharakat Fathah (A, Ba, Ta, dst). Dibaca pendek.",
     lessons: [
       { id: "1_1", text: "أَ بَ تَ ثَ بَ أَ تَ ثَ ثَ تَ بَ أَ أَ تَ ثَ بَ أَ بَ تَ ثَ بَ أَ تَ ثَ", read: "a ba ta tsa", note: "Buka mulut. Dibaca pendek dan cepat berurutan." },
@@ -13,7 +13,7 @@ export const iqraData = [
   },
   {
     jilid: 2,
-    title: "Iqra Jilid 2",
+    title: "Tilawah Tahap 2",
     description: "Huruf Bersambung & Pengenalan Mad (Panjang 2 Harakat).",
     lessons: [
       { id: "2_1", text: "بَا تَا", read: "baa taa", note: "Bila ada Alif setelah Fathah, dibaca panjang 2 ayunan." },
@@ -23,7 +23,7 @@ export const iqraData = [
   },
   {
     jilid: 3,
-    title: "Iqra Jilid 3",
+    title: "Tilawah Tahap 3",
     description: "Pengenalan Harakat Kasrah (i) dan Dhammah (u).",
     lessons: [
       { id: "3_1", text: "بِ تِ ثِ", read: "bi ti tsi", note: "Kasrah dibaca 'i'. Meringis." },
@@ -34,7 +34,7 @@ export const iqraData = [
   },
   {
     jilid: 4,
-    title: "Iqra Jilid 4",
+    title: "Tilawah Tahap 4",
     description: "Pengenalan Tanwin (an, in, un), Sukun (mati), dan Qalqalah (pantulan).",
     lessons: [
       { id: "4_1", text: "بً بٍ بٌ", read: "ban bin bun", note: "Ini adalah Tanwin. Suaranya berakhiran 'n'." },
@@ -44,7 +44,7 @@ export const iqraData = [
   },
   {
     jilid: 5,
-    title: "Iqra Jilid 5",
+    title: "Tilawah Tahap 5",
     description: "Pengenalan Tasydid (ditekan), Alif Lam Qamariyah, dan cara Waqaf (berhenti).",
     lessons: [
       { id: "5_1", text: "إِنَّ", read: "in-na", note: "Tasydid (Syaddah). Ditekan dan ditahan (dengung)." },
@@ -54,7 +54,7 @@ export const iqraData = [
   },
   {
     jilid: 6,
-    title: "Iqra Jilid 6",
+    title: "Tilawah Tahap 6",
     description: "Alif Lam Syamsiyah, Ikhfa, Idgham, dan pengenalan awal ayat Al-Qur'an.",
     lessons: [
       { id: "6_1", text: "وَالشَّمْسِ", read: "wasy-syamsi", note: "Alif Lam Syamsiyah. Huruf Lam lebur ke huruf Syin." },

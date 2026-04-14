@@ -9,13 +9,27 @@ function doPost(e) {
     const requestData = JSON.parse(e.postData.contents);
     const targetText = requestData.targetText;
     const audioData = requestData.audio; // File Voice Note (Base64)
+    const mode = requestData.mode || "tahfidz"; // Mendeteksi mode belajar
     
     const ustadzName = requestData.ustadz || "Hamzah"; 
     const panggilan = ustadzName === "Hamzah" ? "antum" : "anti";
     const namaPenguji = ustadzName === "Hamzah" ? "Ustadz Hamzah (Laki-laki)" : "Ustadzah Humairah (Perempuan)";
 
-    const prompt = `Anda adalah ${namaPenguji}, seorang penguji hafalan Al-Qur'an (Tahfidz) yang sangat teliti, tegas, namun penyayang.
-    Tugas Anda mendengarkan rekaman suara murid secara langsung dan membandingkannya dengan teks bacaan asli Al-Qur'an.
+    let prompt = "";
+    if (mode === "tilawah") {
+      prompt = `Anda adalah mesin pemeriksa pelafalan huruf Arab. Tugas Anda sangat spesifik: periksa bacaan murid per baris tanpa basa-basi untuk menghemat token.
+      
+      Teks Target yang harus dibaca murid: "${targetText}"
+
+      ATURAN KETAT (WAJIB DIPATUHI 100%):
+      1. Dengarkan audio murid.
+      2. Berikan skor 0-100 berdasarkan ketepatan makhraj.
+      3. Tuliskan transkrip apa yang didengar di "ai_heard".
+      4. Jika skor >= 75 (Lulus): KOSONGKAN isi "note" (wajib string kosong "").
+      5. Jika skor < 75 (Gagal): Isi "note" HANYA dengan cara baca Latin yang benar dari Teks Target tersebut. DILARANG KERAS menyapa, memuji, atau memberi motivasi. Contoh balasan yang benar: "Cara baca: a ba ta tsa".`;
+    } else {
+      prompt = `Anda adalah ${namaPenguji}, seorang penguji hafalan Al-Qur'an (Tahfidz) yang sangat teliti, tegas, namun penyayang.
+      Tugas Anda mendengarkan rekaman suara murid secara langsung dan membandingkannya dengan teks bacaan asli Al-Qur'an.
 
     ATURAN SANGAT PENTING (WAJIB DITAATI 100%):
     1. DILARANG KERAS MENULIS HURUF ARAB/HIJAIYAH: Seluruh teks evaluasi, ayat, dan koreksi WAJIB ditulis menggunakan huruf Latin (Transliterasi). Mesin suara (TTS) akan error jika membaca huruf Arab.
@@ -39,6 +53,7 @@ function doPost(e) {
       "score": [angka 0 sampai 100],
       "note": "[Ulasan lengkap dan jujur Anda sebagai guru pembimbing. Gunakan kata '${panggilan}' sebagai kata ganti murid. Puji poin positifnya, namun jelaskan letak rinci kesalahannya jika ada, dan beri koreksi pembenarannya.]"
     }`;
+    }
 
     // Menggunakan Model AI (Generasi Terbaru untuk API Premium)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${AI_API_KEY}`;
@@ -110,21 +125,24 @@ function doPost(e) {
     try {
       finalResponseObj = JSON.parse(aiText); // Parse JSON dari AI
       
-      const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${AI_API_KEY}`;
-      // Wavenet-B = Pria Dewasa (Hamzah), Wavenet-A = Wanita (Humairah)
-      const voiceName = ustadzName === "Hamzah" ? "id-ID-Wavenet-B" : "id-ID-Wavenet-A"; 
-      
-      const ttsPayload = {
-        "input": { "text": finalResponseObj.note },
-        "voice": { "languageCode": "id-ID", "name": voiceName },
-        "audioConfig": { "audioEncoding": "MP3", "speakingRate": 0.95 } // Intonasi diperlambat agar berwibawa
-      };
-      
-      const ttsOptions = { "method": "post", "contentType": "application/json", "payload": JSON.stringify(ttsPayload), "muteHttpExceptions": true };
-      const ttsRes = UrlFetchApp.fetch(ttsUrl, ttsOptions);
-      
-      if (ttsRes.getResponseCode() === 200) {
-         finalResponseObj.audio_base64 = JSON.parse(ttsRes.getContentText()).audioContent;
+      // Hanya generate suara teks (TTS) jika ada catatan/koreksi untuk menghemat bandwidth
+      if (finalResponseObj.note && finalResponseObj.note.trim() !== "") {
+        const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${AI_API_KEY}`;
+        // Wavenet-B = Pria Dewasa (Hamzah), Wavenet-A = Wanita (Humairah)
+        const voiceName = ustadzName === "Hamzah" ? "id-ID-Wavenet-B" : "id-ID-Wavenet-A"; 
+        
+        const ttsPayload = {
+          "input": { "text": finalResponseObj.note },
+          "voice": { "languageCode": "id-ID", "name": voiceName },
+          "audioConfig": { "audioEncoding": "MP3", "speakingRate": 0.95 } // Intonasi diperlambat agar berwibawa
+        };
+        
+        const ttsOptions = { "method": "post", "contentType": "application/json", "payload": JSON.stringify(ttsPayload), "muteHttpExceptions": true };
+        const ttsRes = UrlFetchApp.fetch(ttsUrl, ttsOptions);
+        
+        if (ttsRes.getResponseCode() === 200) {
+           finalResponseObj.audio_base64 = JSON.parse(ttsRes.getContentText()).audioContent;
+        }
       }
     } catch(e) {
       // Jika Cloud TTS belum diaktifkan/gagal, abaikan. Aplikasi akan pakai suara robot otomatis.

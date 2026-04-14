@@ -591,12 +591,16 @@ function App() {
       // Ambil kata yang sedang aktif di step saat ini
       const currentWord = iqraSteps[currentIqraStep].word;
       const iqraPromptText = `[MODE BELAJAR IQRA] Murid sedang belajar membaca 1 potongan kata: "${currentWord}". Catatan Fokus dari guru: ${selectedIqraLesson.note}. Dengarkan dengan cermat, apakah makhraj yang diucapkan persis seperti huruf/kata tersebut?`;
+      // Ambil seluruh kata dalam 1 baris
+      const currentRowWords = iqraSteps[currentIqraStep]?.words?.join(' ') || "";
+      const iqraPromptText = currentRowWords;
 
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         body: JSON.stringify({ 
           targetText: iqraPromptText, 
           ustadz: selectedUstadz,
+          mode: 'tilawah',
           audio: { base64: audioData.audioBase64, mimeType: audioData.audioMimeType }
         })
       });
@@ -610,10 +614,13 @@ function App() {
       setAiAudio(result.audio_base64 || null);
       const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : '';
       setAiNote(aiHeardText + result.note);
+      setAiNote(result.note || "");
 
       setIqraSteps(prev => {
         const newSteps = [...prev];
         newSteps[currentIqraStep].status = isCorrect ? 'correct' : 'wrong';
+        newSteps[currentIqraStep].correctionNote = result.note || `Cara baca: ${currentRowWords}`;
+        newSteps[currentIqraStep].correctionAudio = result.audio_base64 || null;
         return newSteps;
       });
 
@@ -630,6 +637,7 @@ function App() {
       } else {
         setSessionState('wrong_feedback'); // Tampilkan UI peringatan (Merah)
         if (result.note) setTimeout(() => handlePlayUstadzVoice(result.note, result.audio_base64), 300);
+        setSessionState('idle'); // Tetap di baris ini, UI otomatis merah karena status 'wrong'
       }
 
       if (!currentUser) setFreeUsageCount(prev => prev + 1);
@@ -637,6 +645,8 @@ function App() {
       setScore(0);
       setAiNote("Error Sistem: " + err.message);
       setSessionState('wrong_feedback');
+      alert("Error Sistem AI: " + err.message);
+      setSessionState('idle');
     }
   };
 
@@ -1151,14 +1161,48 @@ function App() {
         );
       }
 
-      case 'iqra':
+  case 'level':
+    return (
+      <div className="p-4 pb-24 space-y-6 animate-in fade-in duration-300">
+         <h1 className="text-2xl font-black text-gray-800 tracking-tight">Pilih Level Belajar</h1>
+         <p className="text-sm text-gray-500">Tentukan target belajar Anda hari ini sesuai dengan kemampuan bacaan.</p>
+
+         <div className="space-y-4">
+           <button onClick={() => { setActiveTab('tilawah'); setSelectedIqraJilid(null); setSelectedIqraLesson(null); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
+             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">1</div>
+             <div>
+               <h3 className="font-black text-gray-800 text-lg">Tilawah (Dasar)</h3>
+               <p className="text-xs text-gray-500 mt-1">Untuk pemula yang belum bisa membaca huruf Al-Qur'an.</p>
+             </div>
+           </button>
+
+           <button onClick={() => { setActiveTab('setor'); setSetoranMode('tahsin'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
+             <div className="w-14 h-14 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">2</div>
+             <div>
+               <h3 className="font-black text-gray-800 text-lg">Tahsin (Perbaikan)</h3>
+               <p className="text-xs text-gray-500 mt-1">Fokus memperbaiki panjang pendek & makhraj (tajwid).</p>
+             </div>
+           </button>
+
+           <button onClick={() => { setActiveTab('setor'); setSetoranMode('tahfidz'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
+             <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">3</div>
+             <div>
+               <h3 className="font-black text-gray-800 text-lg">Tahfidz (Hafalan)</h3>
+               <p className="text-xs text-gray-500 mt-1">Bacaan standar, lanjut menghafal mandiri (Setoran Buta).</p>
+             </div>
+           </button>
+         </div>
+      </div>
+    );
+
+  case 'tilawah':
         if (selectedIqraLesson) {
           // TAMPILAN 3: MODE FLASHCARD (LAYAR SETORAN IQRA)
           return (
             <div className="p-4 pb-24 flex flex-col h-full animate-in slide-in-from-right duration-300">
                <div className="flex items-center gap-3 mb-6">
                  <button onClick={() => { setSelectedIqraLesson(null); stopListening(); setSessionState('idle'); }} className="p-2 bg-white rounded-full shadow-sm text-gray-600 hover:text-green-600"><ChevronRight className="rotate-180" size={20}/></button>
-                 <h1 className="text-lg font-black text-gray-800">Flashcard Iqra</h1>
+                 <h1 className="text-lg font-black text-gray-800">Flashcard Tilawah</h1>
                </div>
                <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-4">
                  <div className="bg-white w-full rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
@@ -1188,9 +1232,20 @@ function App() {
                             {/* Tombol Aksi per Baris */}
                             <div className="flex flex-col items-center justify-center shrink-0 w-14 sm:w-16 border-r-2 border-gray-200/40 pr-2 mr-2 h-full min-h-[3rem]">
                                {isActive && sessionState === 'idle' && (
+                               {isActive && sessionState === 'idle' && row.status !== 'wrong' && (
                                  <button onClick={handleStartSetoranIqra} className="w-10 h-10 rounded-full bg-green-500 text-white shadow-md hover:bg-green-600 active:scale-90 transition-all flex items-center justify-center">
                                    <Mic size={20} />
                                  </button>
+                               )}
+                               {isActive && sessionState === 'idle' && row.status === 'wrong' && (
+                                 <div className="flex flex-col gap-1.5 items-center">
+                                   <button onClick={handleStartSetoranIqra} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 active:scale-90 transition-all flex items-center justify-center" title="Ulangi Rekaman">
+                                     <Mic size={18} />
+                                   </button>
+                                   <button onClick={() => handlePlayUstadzVoice(row.correctionNote, row.correctionAudio)} className="text-[10px] sm:text-xs flex items-center gap-1 font-bold text-red-600 bg-red-100 hover:bg-red-200 px-2 py-1 rounded-lg transition-colors shadow-sm" title="Koreksi Bacaan">
+                                     <Volume2 size={12} /> Cek
+                                   </button>
+                                 </div>
                                )}
                                {isActive && sessionState === 'recording' && (
                                  <button onClick={handleStopSetoranIqra} className="w-10 h-10 rounded-full bg-red-500 text-white shadow-md animate-pulse active:scale-90 transition-all flex items-center justify-center">
@@ -1294,7 +1349,7 @@ function App() {
         // TAMPILAN 1: DAFTAR JILID IQRA
         return (
           <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
-             <h1 className="text-2xl font-black text-gray-800 tracking-tight">Belajar Iqra'</h1>
+             <h1 className="text-2xl font-black text-gray-800 tracking-tight">Belajar Tilawah Dasar</h1>
              <p className="text-sm text-gray-500">Mulai belajar membaca huruf hijaiyah dari dasar hingga lancar membaca Al-Qur'an.</p>
              <div className="grid grid-cols-2 gap-4 mt-4">
                {iqraData.map(jilid => (
@@ -1954,9 +2009,9 @@ function App() {
           <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Tajwid</span>
         </button>
-        <button onClick={() => { setActiveTab('iqra'); setSelectedIqraLesson(null); setSelectedIqraJilid(null); }} className={`flex flex-col items-center transition-all ${activeTab === 'iqra' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <Book size={22} fill={activeTab === 'iqra' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Iqra</span>
+        <button onClick={() => setActiveTab('level')} className={`flex flex-col items-center transition-all ${activeTab === 'level' || activeTab === 'tilawah' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
+          <Star size={22} fill={activeTab === 'level' || activeTab === 'tilawah' ? "currentColor" : "none"} />
+          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Level</span>
         </button>
         
         {/* Floating Center Mic Button */}
