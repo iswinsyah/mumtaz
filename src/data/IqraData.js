@@ -4,11 +4,11 @@ export const iqraData = [
     title: "Iqra Jilid 1",
     description: "Pengenalan Huruf Tunggal berharakat Fathah (A, Ba, Ta, dst). Dibaca pendek.",
     lessons: [
-      { id: "1_1", text: "ا ب", read: "a ba", note: "Buka mulut. Dibaca pendek dan cepat." },
-      { id: "1_2", text: "ب ا ب", read: "ba a ba", note: "Perhatikan makhraj huruf Ba di bibir." },
-      { id: "1_3", text: "ت ا ب", read: "ta a ba", note: "Huruf Ta titiknya dua di atas." },
-      { id: "1_4", text: "ث ب ت", read: "tsa ba ta", note: "Huruf Tsa ujung lidah digigit sedikit." },
-      { id: "1_5", text: "ج ح خ", read: "ja ha kho", note: "Bedakan Ha (bersih) dan Kho (ngorok)." }
+      { id: "1_1", text: "أَ بَ", read: "a ba", note: "Buka mulut. Dibaca pendek dan cepat." },
+      { id: "1_2", text: "بَ أَ بَ", read: "ba a ba", note: "Perhatikan makhraj huruf Ba di bibir." },
+      { id: "1_3", text: "تَ أَ بَ", read: "ta a ba", note: "Huruf Ta titiknya dua di atas." },
+      { id: "1_4", text: "ثَ بَ تَ", read: "tsa ba ta", note: "Huruf Tsa ujung lidah digigit sedikit." },
+      { id: "1_5", text: "جَ حَ خَ", read: "ja ha kho", note: "Bedakan Ha (bersih) dan Kho (ngorok)." }
     ]
   },
   {
