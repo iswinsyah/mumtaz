@@ -1,9 +1,9 @@
 function doPost(e) {
   try {
-    const GEMINI_API_KEY = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+    const AI_API_KEY = PropertiesService.getScriptProperties().getProperty("AI_API_KEY");
 
-    if (!GEMINI_API_KEY) {
-       throw new Error("API Key Gemini tidak ditemukan di Properties!");
+    if (!AI_API_KEY) {
+       throw new Error("API Key tidak ditemukan di Properties!");
     }
 
     const requestData = JSON.parse(e.postData.contents);
@@ -40,13 +40,13 @@ function doPost(e) {
       "note": "[Ulasan lengkap dan jujur Anda sebagai guru pembimbing. Gunakan kata '${panggilan}' sebagai kata ganti murid. Puji poin positifnya, namun jelaskan letak rinci kesalahannya jika ada, dan beri koreksi pembenarannya.]"
     }`;
 
-    // Menggunakan Model Gemini 2.5 Flash (Generasi Terbaru untuk API Premium)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Menggunakan Model AI (Generasi Terbaru untuk API Premium)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${AI_API_KEY}`;
     
     // PENTING: File Audio harus diletakkan SEBELUM teks instruksi agar AI mendengarkannya terlebih dahulu
     let parts = [];
 
-    // Sisipkan file audio langsung ke AI Google
+    // Sisipkan file audio langsung ke AI
     if (audioData && audioData.base64) {
        parts.push({
          "inlineData": {
@@ -82,12 +82,12 @@ function doPost(e) {
       "muteHttpExceptions": true
     };
 
-    const response = UrlFetchApp.fetch(geminiUrl, options);
+    const response = UrlFetchApp.fetch(apiUrl, options);
     const responseCode = response.getResponseCode();
     const responseText = response.getContentText();
 
     if (responseCode !== 200) {
-       throw new Error("Ditolak oleh Gemini: " + responseText);
+       throw new Error("Ditolak oleh Server AI: " + responseText);
     }
 
     const responseJson = JSON.parse(responseText);
@@ -98,19 +98,19 @@ function doPost(e) {
     }
     
     // Pastikan konten teks berhasil diekstrak
-    let geminiText = "";
+    let aiText = "";
     try {
-      geminiText = responseJson.candidates[0].content.parts[0].text;
+      aiText = responseJson.candidates[0].content.parts[0].text;
     } catch (e) {
        throw new Error("Format balasan AI tidak sesuai: " + responseText);
     }
 
-    // --- MENGUBAH TEKS MENJADI SUARA MANUSIA (GOOGLE CLOUD TTS WAVENET) ---
+    // --- MENGUBAH TEKS MENJADI SUARA MANUSIA (CLOUD TTS WAVENET) ---
     let finalResponseObj;
     try {
-      finalResponseObj = JSON.parse(geminiText); // Parse JSON dari Gemini
+      finalResponseObj = JSON.parse(aiText); // Parse JSON dari AI
       
-      const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GEMINI_API_KEY}`;
+      const ttsUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${AI_API_KEY}`;
       // Wavenet-B = Pria Dewasa (Hamzah), Wavenet-A = Wanita (Humairah)
       const voiceName = ustadzName === "Hamzah" ? "id-ID-Wavenet-B" : "id-ID-Wavenet-A"; 
       
@@ -128,7 +128,7 @@ function doPost(e) {
       }
     } catch(e) {
       // Jika Cloud TTS belum diaktifkan/gagal, abaikan. Aplikasi akan pakai suara robot otomatis.
-      if (!finalResponseObj) return ContentService.createTextOutput(geminiText).setMimeType(ContentService.MimeType.JSON);
+      if (!finalResponseObj) return ContentService.createTextOutput(aiText).setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify(finalResponseObj))

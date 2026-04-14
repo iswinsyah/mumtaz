@@ -14,7 +14,7 @@ export const useQuranSpeech = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setError('Browser tidak mendukung fitur pengenalan suara. Gunakan Google Chrome/Edge.');
+      setError('Browser tidak mendukung fitur pengenalan suara. Gunakan Chrome/Edge.');
       return;
     }
 

@@ -5,11 +5,12 @@ import {
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
   CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
   ChevronRight, Volume2, MessageCircle, X, List,
-  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink
+  LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink, Book
 } from 'lucide-react';
 import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
 import { quranData } from './data/QuranData';
+import { iqraData } from './data/IqraData';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
@@ -93,7 +94,7 @@ function App() {
   const [isLoadingLearnData, setIsLoadingLearnData] = useState(false); // Indikator loading saat ambil data
   const [ayahStart, setAyahStart] = useState(1); // Filter ayat awal
   const [ayahEnd, setAyahEnd] = useState(2); // Filter ayat akhir
-  const [aiNote, setAiNote] = useState(''); // Catatan dari AI Gemini
+  const [aiNote, setAiNote] = useState(''); // Catatan dari AI
   const [aiAudio, setAiAudio] = useState(null); // Audio Premium dari AI
   const [isSpeakingNote, setIsSpeakingNote] = useState(false); // Indikator TTS Ustadz sedang bicara
   const [setoranMode, setSetoranMode] = useState('tahsin'); // Mode: 'tahfidz' (Blind) atau 'tahsin' (Baca)
@@ -101,6 +102,8 @@ function App() {
   const [isAutoplay, setIsAutoplay] = useState(false); // Indikator putar berurutan
   const [isMushafMode, setIsMushafMode] = useState(false); // Toggle mode mushaf
   const [recordedAudioUrl, setRecordedAudioUrl] = useState(null); // URL untuk memutar rekaman sendiri
+  const [selectedIqraJilid, setSelectedIqraJilid] = useState(null); // State penyimpan pilihan Jilid Iqra
+  const [selectedIqraLesson, setSelectedIqraLesson] = useState(null); // State penyimpan pilihan Latihan Iqra
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   // --- STATE OTENTIKASI & LIMITASI ---
@@ -502,13 +505,13 @@ function App() {
     setRecordedAudioUrl(audioUrl);
 
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
+      const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
 
-      const response = await fetch(GAS_URL, {
+      const response = await fetch(BACKEND_URL, {
         method: 'POST',
         // Hapus headers sama sekali agar browser otomatis memakai standard text/plain murni
-        // Ini ampuh 100% untuk menghindari blokir Preflight CORS dari sistem Google
-        // Kirim juga data ustadz yang terpilih ke GAS
+        // Ini ampuh 100% untuk menghindari blokir Preflight CORS
+        // Kirim juga data ustadz yang terpilih ke Backend
         body: JSON.stringify({ 
           targetText, 
           ustadz: selectedUstadz,
@@ -548,11 +551,69 @@ function App() {
     } catch (err) {
       // Tampilkan pesan error aslinya agar kita tahu penyebab pastinya
       setScore(0);
-      setAiNote("Error Sistem: " + err.message + " | Cek setingan GAS bos (Pilih Execute as: Me, Access: Anyone).");
+      setAiNote("Error Sistem: " + err.message + " | Cek setingan Backend bos.");
       setSessionState('result');
     }
   };
 
+  // --- HANDLER KHUSUS UNTUK SETORAN IQRA ---
+  const handleStartSetoranIqra = () => {
+    if (!currentUser && freeUsageCount >= 3) {
+      setAuthMode('signup');
+      setShowAuthModal(true);
+      return;
+    }
+    setSessionState('recording');
+    setRecordedAudioUrl(null);
+    startListening();
+  };
+
+  const handleStopSetoranIqra = async () => {
+    setSessionState('processing');
+    setAiNote('');
+    const audioData = await stopListening();
+
+    if (!audioData || !audioData.audioBase64 || audioData.size < 3000) {
+      setSessionState('idle');
+      alert(`Rekaman gagal (Ukuran audio: ${audioData?.size || 0} bytes). Pastikan mikrofon tidak dibisukan.`);
+      return;
+    }
+
+    const audioUrl = `data:${audioData.audioMimeType};base64,${audioData.audioBase64}`;
+    setRecordedAudioUrl(audioUrl);
+
+    try {
+      const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
+      
+      // Instruksi khusus untuk Backend AI agar fokus mengevaluasi huruf tunggal/pendek
+      const iqraPromptText = `[MODE BELAJAR IQRA] Huruf target: ${selectedIqraLesson.text} (dibaca: ${selectedIqraLesson.read}). Catatan Fokus Pembimbing: ${selectedIqraLesson.note}`;
+
+      const response = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          targetText: iqraPromptText, 
+          ustadz: selectedUstadz,
+          audio: { base64: audioData.audioBase64, mimeType: audioData.audioMimeType }
+        })
+      });
+
+      const textResponse = await response.text();
+      const result = JSON.parse(textResponse);
+
+      setScore(result.score);
+      const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : '';
+      setAiNote(aiHeardText + result.note);
+      setAiAudio(result.audio_base64 || null);
+      setSessionState('result');
+
+      if (result.note) setTimeout(() => handlePlayUstadzVoice(result.note, result.audio_base64), 800);
+      if (!currentUser) setFreeUsageCount(prev => prev + 1);
+    } catch (err) {
+      setScore(0);
+      setAiNote("Error Sistem: " + err.message);
+      setSessionState('result');
+    }
+  };
 
   const getPredicate = (s) => {
     if (!s) return { label: '', color: '', bg: '', note: '' };
@@ -1064,6 +1125,103 @@ function App() {
           </div>
         );
       }
+
+      case 'iqra':
+        if (selectedIqraLesson) {
+          // TAMPILAN 3: MODE FLASHCARD (LAYAR SETORAN IQRA)
+          return (
+            <div className="p-4 pb-24 flex flex-col h-full animate-in slide-in-from-right duration-300">
+               <div className="flex items-center gap-3 mb-6">
+                 <button onClick={() => { setSelectedIqraLesson(null); stopListening(); setSessionState('idle'); }} className="p-2 bg-white rounded-full shadow-sm text-gray-600 hover:text-green-600"><ChevronRight className="rotate-180" size={20}/></button>
+                 <h1 className="text-lg font-black text-gray-800">Flashcard Iqra</h1>
+               </div>
+               <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-4">
+                 <div className="bg-white w-full rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Baca Teks Berikut</p>
+                    <h2 className="text-6xl font-serif text-green-900 leading-relaxed mb-4 drop-shadow-sm" dir="rtl">{selectedIqraLesson.text}</h2>
+                    <p className="text-sm font-medium text-gray-500 bg-gray-50 py-2 px-4 rounded-xl inline-block border border-gray-200">Latin: {selectedIqraLesson.read}</p>
+                    <div className="mt-6 bg-blue-50 p-4 rounded-2xl border border-blue-100 text-left flex gap-3">
+                       <AlertCircle className="text-blue-500 shrink-0" size={20} />
+                       <p className="text-xs text-blue-700 leading-relaxed"><b>Tips Ustadz:</b> {selectedIqraLesson.note}</p>
+                    </div>
+                 </div>
+
+                 {sessionState === 'idle' && (
+                   <button onClick={handleStartSetoranIqra} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-2">
+                     <Mic size={24} /> Mulai Rekam Suara
+                   </button>
+                 )}
+                 {sessionState === 'recording' && (
+                   <div className="w-full space-y-4 text-center">
+                     <div className="flex justify-center items-center gap-1.5 h-12">
+                       {[...Array(8)].map((_, i) => (
+                         <div key={i} className="w-1.5 bg-red-500 rounded-full animate-bounce" style={{ height: `${40 + Math.random() * 60}%`, animationDuration: `${0.4 + Math.random()}s` }}></div>
+                       ))}
+                     </div>
+                     <p className="text-sm font-bold text-gray-600 animate-pulse">Ustadz sedang mendengarkan...</p>
+                     <button onClick={handleStopSetoranIqra} className="w-full py-4 border-2 border-red-100 bg-red-50 rounded-2xl text-red-600 font-bold uppercase tracking-widest hover:bg-red-100 transition-colors">Berhenti Rekam</button>
+                   </div>
+                 )}
+                 {sessionState === 'processing' && (
+                   <div className="text-center space-y-4">
+                     <div className="w-12 h-12 border-4 border-green-100 border-t-green-600 rounded-full animate-spin mx-auto"></div>
+                     <p className="text-sm font-bold text-gray-500">Menganalisis makhraj huruf...</p>
+                   </div>
+                 )}
+                 {sessionState === 'result' && (
+                   <div className="w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center space-y-4 animate-in zoom-in-95 duration-300">
+                     <h3 className={`text-3xl font-black ${getPredicate(score).color}`}>{score} / 100</h3>
+                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{getPredicate(score).label}</p>
+                     <div className={`p-4 rounded-2xl ${getPredicate(score).bg} text-sm text-gray-700 font-medium italic text-left`}>"{aiNote || getPredicate(score).note}"</div>
+                     {aiAudio && (
+                        <button onClick={() => handlePlayUstadzVoice(aiNote, aiAudio)} className="w-full py-3 bg-green-100 text-green-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-green-200 transition-colors">
+                          {isSpeakingNote ? <Volume2 size={16} className="animate-pulse"/> : <Play size={16}/>}
+                          {isSpeakingNote ? 'Memutar Suara...' : 'Dengarkan Koreksi'}
+                        </button>
+                     )}
+                     <button onClick={() => { setSessionState('idle'); setScore(null); setAiNote(''); }} className="w-full py-3 text-gray-500 font-bold text-sm hover:bg-gray-50 rounded-xl transition-colors">Coba Lagi Materi Ini</button>
+                   </div>
+                 )}
+               </div>
+            </div>
+          );
+        }
+        if (selectedIqraJilid) {
+          // TAMPILAN 2: DAFTAR LATIHAN DI DALAM JILID
+          return (
+            <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
+               <div className="flex items-center gap-3 mb-4">
+                 <button onClick={() => setSelectedIqraJilid(null)} className="p-2 bg-white rounded-full shadow-sm text-gray-600 hover:text-green-600"><ChevronRight className="rotate-180" size={20}/></button>
+                 <div><h1 className="text-xl font-black text-gray-800">{selectedIqraJilid.title}</h1><p className="text-xs text-gray-500 line-clamp-1">{selectedIqraJilid.description}</p></div>
+               </div>
+               <div className="space-y-3">
+                 {selectedIqraJilid.lessons.map((lesson, idx) => (
+                   <button key={lesson.id} onClick={() => { setSelectedIqraLesson(lesson); setSessionState('idle'); setAiNote(''); setScore(null); }} className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all flex items-center justify-between group">
+                     <div className="text-left flex-1 pr-4"><span className="text-[10px] font-black text-green-700 bg-green-100 px-2.5 py-1 rounded-md uppercase tracking-widest">Latihan {idx + 1}</span><p className="text-xs text-gray-500 mt-2.5 line-clamp-2 font-medium">{lesson.note}</p></div>
+                     <div className="text-4xl font-serif text-green-800 group-hover:text-green-600 transition-colors" dir="rtl">{lesson.text}</div>
+                   </button>
+                 ))}
+               </div>
+            </div>
+          );
+        }
+        // TAMPILAN 1: DAFTAR JILID IQRA
+        return (
+          <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
+             <h1 className="text-2xl font-black text-gray-800 tracking-tight">Belajar Iqra'</h1>
+             <p className="text-sm text-gray-500">Mulai belajar membaca huruf hijaiyah dari dasar hingga lancar membaca Al-Qur'an.</p>
+             <div className="grid grid-cols-2 gap-4 mt-4">
+               {iqraData.map(jilid => (
+                 <button key={jilid.jilid} onClick={() => setSelectedIqraJilid(jilid)} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all group flex flex-col items-center text-center">
+                   <div className="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 text-green-700 rounded-full flex items-center justify-center font-black text-2xl mb-3 group-hover:scale-110 transition-transform">{jilid.jilid}</div>
+                   <h3 className="font-black text-gray-800 mb-1">{jilid.title}</h3>
+                   <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{jilid.description}</p>
+                 </button>
+               ))}
+             </div>
+          </div>
+        );
 
       case 'profile':
         if (!currentUser) {
@@ -1644,7 +1802,7 @@ function App() {
                       <p>1. Dengan mendaftar, Anda menyetujui penggunaan wajar aplikasi At Tahfidz.</p>
                       <p>2. Seluruh dana infaq yang terkumpul akan dialokasikan murni untuk:</p>
                       <ul className="list-disc pl-4 font-bold text-gray-700">
-                        <li>Biaya operasional server AI Google.</li>
+                        <li>Biaya operasional server AI.</li>
                         <li>Wakaf Pembangunan Pesantren Villa Quran.</li>
                       </ul>
                     </div>

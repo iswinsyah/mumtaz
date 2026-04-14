@@ -71,12 +71,12 @@ export const useQuranSpeech = () => {
     return new Promise((resolve) => {
       if (mediaRecorderRef.current && isListening) {
         mediaRecorderRef.current.onstop = () => {
-          // Bersihkan tipe format agar sesuai standar Google Gemini (misal: "audio/webm;codecs=opus" jadi "audio/webm")
+          // Bersihkan tipe format agar sesuai standar AI (misal: "audio/webm;codecs=opus" jadi "audio/webm")
           const mimeType = (mediaRecorderRef.current.mimeType || 'audio/webm').split(';')[0];
           // Bungkus pecahan audio menjadi 1 file utuh
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           
-          // Ubah file Audio menjadi teks (Base64) agar bisa dikirim ke Server GAS Google
+          // Ubah file Audio menjadi teks (Base64) agar bisa dikirim ke Server Backend
           const reader = new FileReader();
           reader.readAsDataURL(audioBlob);
           reader.onloadend = () => {
