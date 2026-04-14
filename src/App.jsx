@@ -104,6 +104,8 @@ function App() {
   const [recordedAudioUrl, setRecordedAudioUrl] = useState(null); // URL untuk memutar rekaman sendiri
   const [selectedIqraJilid, setSelectedIqraJilid] = useState(null); // State penyimpan pilihan Jilid Iqra
   const [selectedIqraLesson, setSelectedIqraLesson] = useState(null); // State penyimpan pilihan Latihan Iqra
+  const [iqraSteps, setIqraSteps] = useState([]); // State untuk memecah kata step-by-step
+  const [currentIqraStep, setCurrentIqraStep] = useState(0); // State penunjuk step aktif
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   // --- STATE OTENTIKASI & LIMITASI ---
@@ -585,8 +587,9 @@ function App() {
     try {
       const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
       
-      // Instruksi khusus untuk Backend AI agar fokus mengevaluasi huruf tunggal/pendek
-      const iqraPromptText = `[MODE BELAJAR IQRA] Huruf target: ${selectedIqraLesson.text} (dibaca: ${selectedIqraLesson.read}). Catatan Fokus Pembimbing: ${selectedIqraLesson.note}`;
+      // Ambil kata yang sedang aktif di step saat ini
+      const currentWord = iqraSteps[currentIqraStep].word;
+      const iqraPromptText = `[MODE BELAJAR IQRA] Murid sedang belajar membaca 1 potongan kata: "${currentWord}". Catatan Fokus dari guru: ${selectedIqraLesson.note}. Dengarkan dengan cermat, apakah makhraj yang diucapkan persis seperti huruf/kata tersebut?`;
 
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
@@ -600,18 +603,39 @@ function App() {
       const textResponse = await response.text();
       const result = JSON.parse(textResponse);
 
+      const isCorrect = result.score >= 75; // Syarat lulus kata tersebut (Biru)
+      
       setScore(result.score);
+      setAiAudio(result.audio_base64 || null);
       const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : '';
       setAiNote(aiHeardText + result.note);
-      setAiAudio(result.audio_base64 || null);
-      setSessionState('result');
 
-      if (result.note) setTimeout(() => handlePlayUstadzVoice(result.note, result.audio_base64), 800);
+      setIqraSteps(prev => {
+        const newSteps = [...prev];
+        newSteps[currentIqraStep].status = isCorrect ? 'correct' : 'wrong';
+        return newSteps;
+      });
+
+      if (isCorrect) {
+        // Jika benar, ulasan positif diputar cepat, lalu otomatis buka kunci kata berikutnya
+        if (result.note) setTimeout(() => handlePlayUstadzVoice(result.note, result.audio_base64), 300);
+        
+        if (currentIqraStep + 1 < iqraSteps.length) {
+           setCurrentIqraStep(prev => prev + 1);
+           setSessionState('idle'); // Kembali siap di huruf berikutnya
+        } else {
+           setSessionState('result'); // Lulus semuanya
+        }
+      } else {
+        setSessionState('wrong_feedback'); // Tampilkan UI peringatan (Merah)
+        if (result.note) setTimeout(() => handlePlayUstadzVoice(result.note, result.audio_base64), 300);
+      }
+
       if (!currentUser) setFreeUsageCount(prev => prev + 1);
     } catch (err) {
       setScore(0);
       setAiNote("Error Sistem: " + err.message);
-      setSessionState('result');
+      setSessionState('wrong_feedback');
     }
   };
 
@@ -1138,9 +1162,25 @@ function App() {
                <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-4">
                  <div className="bg-white w-full rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Baca Teks Berikut</p>
-                    <h2 className="text-6xl font-serif text-green-900 leading-relaxed mb-4 drop-shadow-sm" dir="rtl">{selectedIqraLesson.text}</h2>
-                    <p className="text-sm font-medium text-gray-500 bg-gray-50 py-2 px-4 rounded-xl inline-block border border-gray-200">Latin: {selectedIqraLesson.read}</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Baca Teks Yang Menyala</p>
+                    
+                    {/* GRID STEP BY STEP */}
+                    <div className="flex flex-wrap justify-center gap-3 mb-6" dir="rtl">
+                      {iqraSteps.map((step, idx) => {
+                        const isActive = idx === currentIqraStep;
+                        let colorClass = "text-gray-300 bg-gray-50 border-gray-100"; // Terkunci (Abu-abu)
+                        if (step.status === 'correct') colorClass = "text-blue-600 bg-blue-50 border-blue-200 shadow-sm"; // Lulus (Biru)
+                        else if (step.status === 'wrong' && isActive) colorClass = "text-red-500 bg-red-50 border-red-200 animate-pulse"; // Salah (Merah)
+                        else if (isActive) colorClass = "text-gray-800 bg-white border-green-400 shadow-md transform scale-110"; // Sedang Aktif
+
+                        return (
+                          <div key={idx} className={`px-4 py-3 rounded-2xl border-2 transition-all duration-300 text-5xl font-serif ${colorClass}`}>
+                            {step.word}
+                          </div>
+                        )
+                      })}
+                    </div>
+
                     <div className="mt-6 bg-blue-50 p-4 rounded-2xl border border-blue-100 text-left flex gap-3">
                        <AlertCircle className="text-blue-500 shrink-0" size={20} />
                        <p className="text-xs text-blue-700 leading-relaxed"><b>Tips Ustadz:</b> {selectedIqraLesson.note}</p>
@@ -1149,7 +1189,7 @@ function App() {
 
                  {sessionState === 'idle' && (
                    <button onClick={handleStartSetoranIqra} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-2">
-                     <Mic size={24} /> Mulai Rekam Suara
+                     <Mic size={24} /> Baca "{iqraSteps[currentIqraStep]?.word}"
                    </button>
                  )}
                  {sessionState === 'recording' && (
@@ -1169,18 +1209,34 @@ function App() {
                      <p className="text-sm font-bold text-gray-500">Menganalisis makhraj huruf...</p>
                    </div>
                  )}
-                 {sessionState === 'result' && (
-                   <div className="w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center space-y-4 animate-in zoom-in-95 duration-300">
-                     <h3 className={`text-3xl font-black ${getPredicate(score).color}`}>{score} / 100</h3>
-                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{getPredicate(score).label}</p>
-                     <div className={`p-4 rounded-2xl ${getPredicate(score).bg} text-sm text-gray-700 font-medium italic text-left`}>"{aiNote || getPredicate(score).note}"</div>
+                 {sessionState === 'wrong_feedback' && (
+                   <div className="w-full bg-red-50 rounded-3xl p-6 border border-red-100 text-center space-y-4 animate-in zoom-in-95 duration-300">
+                     <h3 className="text-lg font-black text-red-600">Skor: {score} - Belum Tepat</h3>
+                     <p className="text-xs font-medium text-gray-700 italic text-left bg-white p-3 rounded-xl border border-red-100">"{aiNote}"</p>
+                     
                      {aiAudio && (
-                        <button onClick={() => handlePlayUstadzVoice(aiNote, aiAudio)} className="w-full py-3 bg-green-100 text-green-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-green-200 transition-colors">
+                        <button onClick={() => handlePlayUstadzVoice(aiNote, aiAudio)} className="w-full py-3 bg-white text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border border-red-200 hover:bg-red-100 transition-colors">
                           {isSpeakingNote ? <Volume2 size={16} className="animate-pulse"/> : <Play size={16}/>}
                           {isSpeakingNote ? 'Memutar Suara...' : 'Dengarkan Koreksi'}
                         </button>
                      )}
-                     <button onClick={() => { setSessionState('idle'); setScore(null); setAiNote(''); }} className="w-full py-3 text-gray-500 font-bold text-sm hover:bg-gray-50 rounded-xl transition-colors">Coba Lagi Materi Ini</button>
+
+                     <button onClick={() => { 
+                         if (isSpeakingNote) { window.speechSynthesis.cancel(); if(ustadzAudioRef.current) ustadzAudioRef.current.pause(); setIsSpeakingNote(false); }
+                         setSessionState('idle'); 
+                       }} 
+                       className="w-full bg-red-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+                       <Mic size={18} /> Coba Ulangi Kata Ini
+                     </button>
+                   </div>
+                 )}
+                 {sessionState === 'result' && (
+                   <div className="w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center space-y-4 animate-in zoom-in-95 duration-300">
+                     <div className="text-6xl mb-2">🎉</div>
+                     <h3 className="text-3xl font-black text-blue-600">Mumtaz!</h3>
+                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Latihan Selesai</p>
+                     <p className="text-sm text-gray-700">Masya Allah, bacaanmu sudah tepat semua!</p>
+                     <button onClick={() => { setSessionState('idle'); setScore(null); setAiNote(''); setSelectedIqraLesson(null); }} className="w-full py-4 mt-2 bg-blue-600 text-white font-bold text-sm rounded-2xl shadow-md hover:bg-blue-700 transition-colors">Lanjut Materi Berikutnya</button>
                    </div>
                  )}
                </div>
@@ -1197,7 +1253,15 @@ function App() {
                </div>
                <div className="space-y-3">
                  {selectedIqraJilid.lessons.map((lesson, idx) => (
-                   <button key={lesson.id} onClick={() => { setSelectedIqraLesson(lesson); setSessionState('idle'); setAiNote(''); setScore(null); }} className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all flex items-center justify-between group">
+                   <button key={lesson.id} onClick={() => { 
+                     setSelectedIqraLesson(lesson); 
+                     // Pecah kata berdasarkan spasi otomatis jadi array step-by-step
+                     setIqraSteps(lesson.text.split(' ').filter(w => w.trim() !== '').map(w => ({ word: w, status: 'idle' })));
+                     setCurrentIqraStep(0);
+                     setSessionState('idle'); 
+                     setAiNote(''); 
+                     setScore(null); 
+                   }} className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all flex items-center justify-between group">
                      <div className="text-left flex-1 pr-4"><span className="text-[10px] font-black text-green-700 bg-green-100 px-2.5 py-1 rounded-md uppercase tracking-widest">Latihan {idx + 1}</span><p className="text-xs text-gray-500 mt-2.5 line-clamp-2 font-medium">{lesson.note}</p></div>
                      <div className="text-4xl font-serif text-green-800 group-hover:text-green-600 transition-colors" dir="rtl">{lesson.text}</div>
                    </button>
