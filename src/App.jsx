@@ -588,9 +588,6 @@ function App() {
     try {
       const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwsVzY1fpf6jgP9K1Vet5SyWBYdq8Ger69XexOoiD_gtG8eJrzcEWO-uU7cOGr9pWnS/exec";
       
-      // Ambil kata yang sedang aktif di step saat ini
-      const currentWord = iqraSteps[currentIqraStep].word;
-      const iqraPromptText = `[MODE BELAJAR IQRA] Murid sedang belajar membaca 1 potongan kata: "${currentWord}". Catatan Fokus dari guru: ${selectedIqraLesson.note}. Dengarkan dengan cermat, apakah makhraj yang diucapkan persis seperti huruf/kata tersebut?`;
       // Ambil seluruh kata dalam 1 baris
       const currentRowWords = iqraSteps[currentIqraStep]?.words?.join(' ') || "";
       const iqraPromptText = currentRowWords;
@@ -612,8 +609,6 @@ function App() {
       
       setScore(result.score);
       setAiAudio(result.audio_base64 || null);
-      const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : '';
-      setAiNote(aiHeardText + result.note);
       setAiNote(result.note || "");
 
       setIqraSteps(prev => {
