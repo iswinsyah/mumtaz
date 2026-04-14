@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
-  CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign, CreditCard, QrCode,
+  CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign, CreditCard, QrCode, Landmark,
   ChevronRight, Volume2, MessageCircle, X, List,
   LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink, Book
 } from 'lucide-react';
@@ -2021,6 +2021,17 @@ function App() {
                     <label className="flex items-start gap-2 cursor-pointer mt-3 pt-3 border-t border-green-100">
                       <input type="checkbox" required className="mt-0.5 w-3.5 h-3.5 accent-green-600 rounded cursor-pointer" />
                       <span className="text-[10px] font-bold text-gray-700 leading-tight">Saya setuju dengan ketentuan di atas dan berniat infaq lillahi ta'ala.</span>
+                    </label>
+
+                    <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'manual' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center"><Landmark size={20}/></div>
+                        <div>
+                          <p className="font-bold text-sm text-gray-800">Transfer Bank Manual</p>
+                          <p className="text-[10px] text-gray-500">Verifikasi Admin (BSI, Mandiri, BCA)</p>
+                        </div>
+                      </div>
+                      <input type="radio" name="method" value="manual" checked={paymentMethod === 'manual'} onChange={() => setPaymentMethod('manual')} className="w-4 h-4 accent-green-600" />
                     </label>
                   </div>
 
