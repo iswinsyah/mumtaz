@@ -2007,14 +2007,6 @@ function App() {
           <Star size={22} fill={activeTab === 'level' || activeTab === 'tilawah' ? "currentColor" : "none"} />
           <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Level</span>
         </button>
-        
-        {/* Floating Center Mic Button */}
-        <div className="relative -top-6">
-          <div className="absolute inset-0 bg-green-700 rounded-full blur-xl opacity-20 scale-150"></div>
-          <button onClick={() => setActiveTab('setor')} className={`w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 transform active:scale-90 ${activeTab === 'setor' ? 'bg-green-800 text-white rotate-[360deg]' : 'bg-green-500 text-white hover:bg-green-600 rotate-0'}`}>
-            <Mic size={30} strokeWidth={2.5} />
-          </button>
-        </div>
 
         <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' || activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
           <List size={22} fill={activeTab === 'quran' || activeTab === 'learn' ? "currentColor" : "none"} />
