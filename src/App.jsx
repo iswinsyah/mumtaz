@@ -699,6 +699,26 @@ function App() {
                 </div>
               </a>
 
+            {/* Social Proof / Smart Threshold Banner */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-green-100 flex items-center gap-3">
+              <div className="flex -space-x-3 shrink-0">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Umar" className="w-8 h-8 rounded-full border-2 border-white bg-blue-100" alt="user"/>
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ali" className="w-8 h-8 rounded-full border-2 border-white bg-green-100" alt="user"/>
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aisyah" className="w-8 h-8 rounded-full border-2 border-white bg-yellow-100" alt="user"/>
+                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-black text-gray-400">+</div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-bold text-gray-800 leading-tight">
+                  {(() => {
+                    const simulatedUserCount = 45; // TODO: Ganti dengan data real dari API database nanti
+                    if (simulatedUserCount < 1000) return "Jadilah pelopor! Bergabung bersama angkatan pertama Hufadz digital.";
+                    if (simulatedUserCount <= 5000) return `Telah dipercaya oleh ${(Math.floor(simulatedUserCount / 100) * 100).toLocaleString('id-ID')}+ pejuang Al-Qur'an.`;
+                    return `Bergabunglah bersama ${(Math.floor(simulatedUserCount / 1000) * 1000).toLocaleString('id-ID')}+ Hufadz lainnya!`;
+                  })()}
+                </p>
+              </div>
+            </div>
+
             {/* Social Media Feed for Hufadz (24 Hours Ephemeral) */}
             <div className="flex justify-between items-center px-2 pt-2">
               <h2 className="font-bold text-gray-700">Kabar Hufadz</h2>
