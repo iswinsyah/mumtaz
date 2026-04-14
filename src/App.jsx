@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
-  CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign,
+  CheckCircle, AlertCircle, Star, Bell, Settings, DollarSign, CreditCard, QrCode,
   ChevronRight, Volume2, MessageCircle, X, List,
   LogOut, LogIn, Lock, FileText, Eye, EyeOff, Users, ExternalLink, Book
 } from 'lucide-react';
@@ -104,6 +104,10 @@ function App() {
   const [recordedAudioUrl, setRecordedAudioUrl] = useState(null); // URL untuk memutar rekaman sendiri
   const [selectedIqraJilid, setSelectedIqraJilid] = useState(null); // State penyimpan pilihan Jilid Iqra
   const [selectedIqraLesson, setSelectedIqraLesson] = useState(null); // State penyimpan pilihan Latihan Iqra
+  const [showPaymentGateway, setShowPaymentGateway] = useState(false); // Menampilkan payment gateway dummy
+  const [paymentStep, setPaymentStep] = useState('form'); // 'form', 'processing', 'success'
+  const [paymentAmount, setPaymentAmount] = useState(50000);
+  const [paymentMethod, setPaymentMethod] = useState('qris');
   const [iqraSteps, setIqraSteps] = useState([]); // State untuk memecah kata step-by-step
   const [currentIqraStep, setCurrentIqraStep] = useState(0); // State penunjuk step aktif
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
@@ -440,7 +444,8 @@ function App() {
       
       // Set rentang ayat bawaan ke seluruh isi surah tersebut
       setAyahStart(1);
-      setAyahEnd(formattedText.length);
+      // Default saat baru dipilih: maksimal 5 ayat pertama saja
+      setAyahEnd(Math.min(formattedText.length, 5));
     } catch (err) {
       console.error("Error Detail:", err);
       alert("Gagal mengambil data surah dari server utama maupun cadangan. Coba lagi nanti.");
@@ -487,7 +492,7 @@ function App() {
       });
       
       setAyahStart(1);
-      setAyahEnd(formattedText.length);
+      setAyahEnd(Math.min(formattedText.length, 5));
     } catch (err) {
       console.error("Error Detail:", err);
       alert("Gagal mengambil data Juz. Coba lagi nanti.");
@@ -692,6 +697,18 @@ function App() {
                 <p className="text-[10px] text-blue-50 mt-1 opacity-90 font-medium leading-relaxed">Bagikan ke grup WA. Raih pahala jariyah dari setiap huruf yang mereka baca.</p>
               </div>
               <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors relative z-10 shrink-0">
+                <ChevronRight size={20} />
+              </div>
+            </button>
+
+            {/* Tombol Wakaf / Payment Gateway (Mencolok) */}
+            <button onClick={() => { setPaymentStep('form'); setShowPaymentGateway(true); }} className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 p-4 rounded-2xl shadow-lg shadow-yellow-200 text-yellow-900 flex items-center justify-between group active:scale-95 transition-all overflow-hidden relative mt-3">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+              <div className="text-left relative z-10">
+                <h3 className="font-black text-lg flex items-center gap-2"><Heart size={18} className="animate-pulse text-red-500" fill="currentColor"/> Wakaf & Infaq</h3>
+                <p className="text-[10px] text-yellow-900/80 mt-1 font-medium leading-relaxed">Dukung operasional AI At Tahfidz. Pembayaran otomatis via Payment Gateway.</p>
+              </div>
+              <div className="bg-white/30 p-2 rounded-xl group-hover:bg-white/40 transition-colors relative z-10 shrink-0">
                 <ChevronRight size={20} />
               </div>
             </button>
@@ -916,8 +933,16 @@ function App() {
                       onBlur={() => {
                         let val = Number(ayahStart);
                         if (val < 1 || isNaN(val)) val = 1;
-                        if (val > Number(ayahEnd)) val = Number(ayahEnd);
+                        if (val > verses) val = verses;
                         setAyahStart(val);
+                        
+                        // Pastikan batas maksimal tetap 5 ayat
+                        let currentEnd = Number(ayahEnd);
+                        if (currentEnd < val) setAyahEnd(val);
+                        else if (currentEnd - val >= 5) {
+                          setAyahEnd(val + 4);
+                          alert("Maksimal setoran dibatasi 5 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
+                        }
                       }}
                       className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
                     />
@@ -930,6 +955,12 @@ function App() {
                         let val = Number(ayahEnd);
                         if (val > verses || isNaN(val)) val = verses;
                         if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
+                        
+                        // Batasi agar tidak melampaui 5 ayat
+                        if (val - Number(ayahStart) >= 5) {
+                          val = Number(ayahStart) + 4;
+                          alert("Maksimal setoran dibatasi 5 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
+                        }
                         setAyahEnd(val);
                       }}
                       className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
@@ -990,7 +1021,7 @@ function App() {
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3">
               <AlertCircle className="text-blue-600 shrink-0" />
               <p className="text-xs text-blue-700 leading-relaxed">
-                <b>Tips At Tahfidz:</b> Dengarkan audio Qari 3x sambil melihat terjemah sebelum memulai setoran buta (Blind Mode).
+                <b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>5 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.
               </p>
             </div>
 
@@ -2000,6 +2031,115 @@ function App() {
                     Sudah punya akun? <button type="button" onClick={() => {setAuthMode('login'); setShowPassword(false);}} className="font-bold text-green-600 underline">Masuk di sini</button>
                   </p>
                 </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Gateway Modal (Dummy / Demo Investor) */}
+      {showPaymentGateway && (
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[160] flex flex-col justify-end animate-in fade-in duration-300">
+          <div className="bg-gray-50 w-full max-h-[90%] rounded-t-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-500 overflow-hidden">
+            <div className="flex justify-center pt-4 pb-2 shrink-0 bg-white border-b border-gray-100">
+               <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+            </div>
+            <button onClick={() => setShowPaymentGateway(false)} className="absolute top-4 right-5 text-gray-400 hover:text-gray-700 bg-gray-100 p-1.5 rounded-full z-10"><X size={20} /></button>
+            
+            <div className="overflow-y-auto flex-1 p-6 pb-12">
+              {paymentStep === 'form' && (
+                <div className="space-y-6">
+                  <div className="text-center space-y-1">
+                    <h3 className="text-xl font-black text-gray-800">Pilih Nominal Wakaf</h3>
+                    <p className="text-xs text-gray-500">Pahala jariyah mengalir dari setiap huruf yang dibaca.</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {[25000, 50000, 100000, 500000].map(amt => (
+                      <button 
+                        key={amt} 
+                        onClick={() => setPaymentAmount(amt)}
+                        className={`py-3 rounded-xl font-bold text-sm border-2 transition-all ${paymentAmount === amt ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:border-green-300'}`}
+                      >
+                        Rp {amt.toLocaleString('id-ID')}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-3 pt-4 border-t border-gray-200">
+                    <h4 className="text-sm font-bold text-gray-700">Metode Pembayaran</h4>
+                    
+                    <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'qris' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center"><QrCode size={20}/></div>
+                        <div>
+                          <p className="font-bold text-sm text-gray-800">QRIS (Otomatis)</p>
+                          <p className="text-[10px] text-gray-500">Gopay, OVO, Dana, LinkAja, m-BCA</p>
+                        </div>
+                      </div>
+                      <input type="radio" name="method" value="qris" checked={paymentMethod === 'qris'} onChange={() => setPaymentMethod('qris')} className="w-4 h-4 accent-green-600" />
+                    </label>
+
+                    <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'va' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center"><CreditCard size={20}/></div>
+                        <div>
+                          <p className="font-bold text-sm text-gray-800">Virtual Account</p>
+                          <p className="text-[10px] text-gray-500">BSI, Mandiri, BCA, BNI, BRI</p>
+                        </div>
+                      </div>
+                      <input type="radio" name="method" value="va" checked={paymentMethod === 'va'} onChange={() => setPaymentMethod('va')} className="w-4 h-4 accent-green-600" />
+                    </label>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setPaymentStep('processing');
+                      setTimeout(() => setPaymentStep('success'), 1500);
+                    }} 
+                    className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 active:scale-95 transition-all flex justify-between items-center px-6 mt-4"
+                  >
+                    <span>Bayar Sekarang</span>
+                    <span>Rp {paymentAmount.toLocaleString('id-ID')} <ChevronRight size={18} className="inline ml-1"/></span>
+                  </button>
+                </div>
+              )}
+
+              {paymentStep === 'processing' && (
+                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-green-500 rounded-full animate-spin"></div>
+                  <p className="font-bold text-gray-600">Menghubungkan ke Payment Gateway...</p>
+                </div>
+              )}
+
+              {paymentStep === 'success' && (
+                <div className="flex flex-col items-center justify-center py-8 text-center space-y-5 animate-in zoom-in-95 duration-300">
+                  <div className="w-full bg-yellow-100 text-yellow-800 p-2 rounded-lg text-[10px] font-black uppercase tracking-widest border border-yellow-200">
+                     MODE DEMO / SIMULASI INVESTOR
+                  </div>
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                     <CheckCircle size={40} />
+                  </div>
+                  <div>
+                     <h3 className="text-2xl font-black text-gray-800">Pembayaran Berhasil!</h3>
+                     <p className="text-sm text-gray-500 mt-2 leading-relaxed px-4">Alhamdulillah, simulasi donasi sebesar <b>Rp {paymentAmount.toLocaleString('id-ID')}</b> telah berhasil diproses oleh sistem.</p>
+                  </div>
+                  
+                  <div className="w-full bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-left space-y-2 mt-4">
+                     <div className="flex justify-between text-xs border-b border-gray-100 pb-2">
+                       <span className="text-gray-500">Nomor Referensi</span>
+                       <span className="font-mono font-bold text-gray-800">INV-{Math.floor(Math.random() * 1000000)}</span>
+                     </div>
+                     <div className="flex justify-between text-xs pt-1">
+                       <span className="text-gray-500">Metode</span>
+                       <span className="font-bold text-gray-800 uppercase">{paymentMethod}</span>
+                     </div>
+                  </div>
+
+                  <button onClick={() => setShowPaymentGateway(false)} className="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-md hover:bg-gray-800 active:scale-95 transition-all mt-4">
+                    Selesai & Tutup
+                  </button>
+                </div>
               )}
             </div>
           </div>
