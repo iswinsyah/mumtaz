@@ -363,12 +363,12 @@ function App() {
   };
 
   const handleStartSetoran = () => {
-    // Cek Limit Penggunaan Gratis
-    if (!currentUser && freeUsageCount >= 3) {
-      setAuthMode('signup');
-      setShowAuthModal(true);
-      return; // Hentikan sebelum merekam
-    }
+    // Cek Limit Penggunaan Gratis [DIMATIKAN SEMENTARA UNTUK DEMO]
+    // if (!currentUser && freeUsageCount >= 3) {
+    //   setAuthMode('signup');
+    //   setShowAuthModal(true);
+    //   return; // Hentikan sebelum merekam
+    // }
     
     setSessionState('recording');
     setRecordedAudioUrl(null);
@@ -560,11 +560,12 @@ function App() {
 
   // --- HANDLER KHUSUS UNTUK SETORAN IQRA ---
   const handleStartSetoranIqra = () => {
-    if (!currentUser && freeUsageCount >= 3) {
-      setAuthMode('signup');
-      setShowAuthModal(true);
-      return;
-    }
+    // [DIMATIKAN SEMENTARA UNTUK DEMO]
+    // if (!currentUser && freeUsageCount >= 3) {
+    //   setAuthMode('signup');
+    //   setShowAuthModal(true);
+    //   return;
+    // }
     setSessionState('recording');
     setRecordedAudioUrl(null);
     startListening();
