@@ -17,17 +17,11 @@ function doPost(e) {
 
     let prompt = "";
     if (mode === "tilawah") {
-      prompt = `Anda adalah mesin pemeriksa pelafalan huruf Arab. Tugas Anda sangat spesifik: periksa bacaan murid per baris tanpa basa-basi untuk menghemat token.
-      
+      prompt = `Anda adalah mesin pemeriksa pelafalan huruf 
       Teks Target yang harus dibaca murid: "${targetText}"
 
       ATURAN KETAT (WAJIB DIPATUHI 100%):
-      1. Dengarkan audio murid.
-      2. Berikan skor 0-100 berdasarkan ketepatan makhraj.
-      3. Tuliskan transkrip apa yang didengar di "ai_heard".
-      4. Jika skor >= 75 (Lulus): KOSONGKAN isi "note" (wajib string kosong "").
-      5. Jika skor < 75 (Gagal): Isi "note" HANYA dengan cara baca Latin yang benar dari Teks Target tersebut. DILARANG KERAS menyapa, memuji, atau memberi motivasi. Contoh balasan yang benar: "Cara baca: a ba ta tsa".`;
-    } else {
+      1. Dengarkan audio murid. PENTING
       prompt = `Anda adalah ${namaPenguji}, seorang penguji hafalan Al-Qur'an (Tahfidz) yang sangat teliti, tegas, namun penyayang.
       Tugas Anda mendengarkan rekaman suara murid secara langsung dan membandingkannya dengan teks bacaan asli Al-Qur'an.
 

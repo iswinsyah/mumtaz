@@ -625,7 +625,7 @@ function App() {
       const textResponse = await response.text();
       const result = JSON.parse(textResponse);
 
-      const isCorrect = result.score >= 75; // Syarat lulus kata tersebut (Biru)
+      const isCorrect = result.score >= 70; // Syarat lulus diturunkan ke 70 (Lebih toleran untuk pemula Iqra)
       
       setScore(result.score);
       setAiAudio(result.audio_base64 || null);
