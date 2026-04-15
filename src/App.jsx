@@ -1291,12 +1291,16 @@ function App() {
                         else if (row.status === 'wrong' && isActive) colorClass = "text-red-500 bg-red-50 border-red-200 animate-pulse";
                         else if (isActive) colorClass = "text-gray-900 bg-white border-green-400 shadow-md ring-4 ring-green-50 transform scale-[1.02] z-10";
 
+                        const gridColsClass = selectedIqraLesson?.columns === 1 ? 'grid-cols-1' :
+                                              selectedIqraLesson?.columns === 2 ? 'grid-cols-2' :
+                                              selectedIqraLesson?.columns === 3 ? 'grid-cols-3' : 'grid-cols-4';
+
                         return (
                           <div key={idx} className={`flex items-center justify-between p-2 sm:p-3 rounded-2xl border-2 transition-all duration-300 ${colorClass}`}>
                             {/* Kolom Kata (Maks 4 per baris) */}
-                            <div className="flex-1 grid grid-cols-4 gap-2 text-center">
+                            <div className={`flex-1 grid ${gridColsClass} gap-2 text-center`}>
                               {row.words && row.words.map((word, wIdx) => (
-                                <div key={wIdx} className="text-3xl sm:text-4xl font-serif py-2 drop-shadow-sm">
+                                <div key={wIdx} className="text-2xl sm:text-3xl font-serif py-2 drop-shadow-sm leading-relaxed">
                                   {word}
                                 </div>
                               ))}
@@ -1398,11 +1402,19 @@ function App() {
                  {selectedIqraJilid.lessons.map((lesson, idx) => (
                    <button key={lesson.id} onClick={() => { 
                      setSelectedIqraLesson(lesson); 
-                     // Pecah kata berdasarkan spasi, lalu kelompokkan 4 kata per 1 baris
-                     const words = lesson.text.split(' ').filter(w => w.trim() !== '');
+                     // Pecah kata berdasarkan splitChar (default spasi)
+                     const delimiter = lesson.splitChar || ' ';
+                     let words = lesson.text.split(delimiter).map(w => w.trim()).filter(w => w !== '');
+                     
+                     // Fitur Acak Baris (Dinamis) agar pemahaman murni, bukan hafalan posisi
+                     if (lesson.randomize !== false) {
+                       words = words.sort(() => Math.random() - 0.5);
+                     }
+
+                     const cols = lesson.columns || 4;
                      const rows = [];
-                     for (let i = 0; i < words.length; i += 4) {
-                       rows.push({ words: words.slice(i, i + 4), status: 'idle' });
+                     for (let i = 0; i < words.length; i += cols) {
+                       rows.push({ words: words.slice(i, i + cols), status: 'idle', correctionNote: '', correctionAudio: null });
                      }
                      setIqraSteps(rows);
                      setCurrentIqraStep(0);
