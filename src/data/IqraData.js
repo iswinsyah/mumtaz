@@ -6,9 +6,9 @@ export const iqraData = [
     lessons: [
       { id: "1_1", columns: 4, text: "أَ بَ تَ ثَ أَ بَ تَ ثَ بَ أَ ثَ تَ تَ بَ أَ ثَ ثَ تَ بَ أَ", note: "Buka mulut. Dibaca pendek dan cepat. (Teks diacak otomatis)" },
       { id: "1_2", columns: 4, text: "جَ حَ خَ أَ جَ حَ خَ بَ جَ حَ خَ تَ جَ حَ خَ ثَ خَ حَ جَ", note: "Bedakan makhraj Ha (bersih) dan Kho (ngorok)." },
-      { id: "1_3", columns: 4, text: "دَ ذَ رَ زَ دَ ذَ رَ زَ ذَ دَ زَ رَ زَ رَ ذَ دَ رَ ذَ دَ زَ", note: "Bedakan ujung lidah Dza dan desis Zai." },
-      { id: "1_4", columns: 4, text: "سَ شَ صَ ضَ سَ شَ صَ ضَ شَ سَ ضَ صَ صَ ضَ سَ شَ ضَ صَ شَ سَ", note: "Perhatikan ketebalan suara Sho dan Dho." },
-      { id: "1_5", columns: 4, text: "طَ ظَ عَ غَ فَ قَ كَ لَ مَ نَ وَ هَ يَ أَ بَ تَ ثَ جَ حَ", note: "Huruf Tho dan Dzo dibaca tebal dan ngangkat lidah." }
+      { id: "1_3", columns: 4, dynamicType: 'fathah', wordLength: 2, text: "بَتَ حَسَ دَرَ صَعَ فَقَ غَمَ", note: "Latihan huruf dinamis. Teks akan di-generate mesin secara acak setiap kali dibuka." },
+      { id: "1_4", columns: 4, dynamicType: 'fathah', wordLength: 3, text: "خَلَقَ بَعَثَ شَرَحَ كَتَبَ نَظَرَ", note: "Latihan 3 huruf dinamis berharakat Fathah (Acak mesin, tidak bermakna)." },
+      { id: "1_5", columns: 4, text: "ضَرَبَ صَدَقَ شَرَحَ كَتَبَ نَظَرَ بَعَثَ حَسَدَ خَلَقَ رَزَقَ قَرَأَ دَخَلَ جَلَسَ ذَهَبَ سَأَلَ طَلَبَ غَسَلَ", note: "Kata bermakna. Harakat Fathah mengikuti lazimnya kalimat tersebut." }
     ]
   },
   {
@@ -16,11 +16,11 @@ export const iqraData = [
     title: "Tilawah Tahap 2",
     description: "Huruf Bersambung & Pengenalan Mad (Panjang 2 Harakat).",
     lessons: [
-      { id: "2_1", columns: 4, text: "بَتَ تَثَ جَحَ خَجَ سَشَ صَضَ طَظَ عَغَ فَقَ كَلَ مَنَ وَهَ يَأَ بَجَ تَحَ ثَخَ دَرَ زَسَ شَصَ ضَطَ", note: "Bacaan huruf bersambung tetap dibaca pendek." },
       { id: "2_2", columns: 4, text: "بَا تَا ثَا جَا حَا خَا دَا ذَا رَا زَا سَا شَا صَا ضَا طَا ظَا عَا غَا فَا قَا", note: "Bila ada Alif setelah Fathah, dibaca panjang 2 ayunan." },
       { id: "2_3", columns: 4, text: "بَتَا بَاتَ جَحَا جَاحَ سَشَا سَاشَ صَضَا صَاضَ طَظَا طَاظَ عَغَا عَاغَ فَقَا فَاقَ كَلَا كَالَ مَنَا مَانَ وَهَا وَاهَ", note: "Bedakan yang dibaca pendek dan panjang. Jangan tertukar!" },
-      { id: "2_4", columns: 4, text: "بَتَثَ جَحَخَ دَذَرَ زَسَشَ صَضَطَ ظَعَغَ فَقَكَ لَمَنَ وَهَيَ أَطَعَ غَلَبَ ضَرَبَ صَدَقَ شَرَحَ كَتَبَ نَظَرَ بَعَثَ حَسَدَ خَلَقَ رَزَقَ", note: "Sambung 3 huruf, baca mengalir tanpa diputus." },
-      { id: "2_5", columns: 4, text: "بَاتَثَ بَتَاثَ جَاحَخَ جَحَاخَ دَاذَرَ دَذَارَ زَاسَشَ زَسَاشَ صَاضَطَ صَضَاطَ ظَاعَغَ ظَعَاغَ فَاقَكَ فَقَاكَ لَامَنَ لَمَانَ وَاهَيَ وَهَايَ غَالَبَ ضَارَبَ", note: "Awas jangan sampai huruf pendek ikut terpantul/memanjang." }
+      { id: "2_3", columns: 4, text: "بَاتَثَ بَتَاثَ جَاحَخَ جَحَاخَ دَاذَرَ دَذَارَ زَاسَشَ زَسَاشَ صَاضَطَ صَضَاطَ ظَاعَغَ ظَعَاغَ فَاقَكَ فَقَاكَ لَامَنَ لَمَانَ وَاهَيَ وَهَايَ", note: "Sambung 3 huruf. Awas huruf pendek jangan ikut memanjang." },
+      { id: "2_4", columns: 4, text: "خَادَعَ جَاهَدَ قَاتَلَ هَاجَرَ صَابَرَ عَانَدَ نَافَقَ سَامَحَ دَافَعَ طَالَبَ بَارَكَ شَارَكَ ضَاعَفَ خَالَفَ حَافَظَ سَابَقَ", note: "Kata bermakna. Huruf pertama dibaca panjang." },
+      { id: "2_5", columns: 4, text: "ضَرَبَا خَرَجَا دَخَلَا قَرَءَا كَتَبَا نَظَرَا بَعَثَا حَسَدَا خَلَقَا رَزَقَا وَجَدَا سَجَدَا طَلَبَا غَسَلَا جَلَسَا ذَهَبَا", note: "Kata bermakna. Huruf di akhir kalimat dibaca panjang." }
     ]
   },
   {
@@ -29,10 +29,10 @@ export const iqraData = [
     description: "Pengenalan Harakat Kasrah (i) dan Dhammah (u).",
     lessons: [
       { id: "3_1", columns: 4, text: "بِ تِ ثِ جِ حِ خِ دِ ذِ رِ زِ سِ شِ صِ ضِ طِ ظِ عِ غِ فِ قِ", note: "Kasrah dibaca 'i'. Bibir agak meringis ke bawah." },
-      { id: "3_2", columns: 4, text: "بُ تُ ثُ جُ حُ خُ دُ ذُ رُ زُ سُ شُ صُ ضُ طُ ظُ عُ غُ فُ قُ", note: "Dhammah dibaca 'u'. Bibir dimonyongkan." },
-      { id: "3_3", columns: 4, text: "بُتِثَ جُحِخَ دُذِرَ زُسِشَ صُضِطَ ظُعِغَ فُقِكَ لُمِنَ وُهِیَ أُطِعَ غُلِبَ ضُرِبَ صُدِقَ شُرِحَ كُتِبَ نُظِرَ بُعِثَ حُسِدَ خُلِقَ رُزِقَ", note: "Latihan transisi perubahan bentuk mulut (a, i, u)." },
-      { id: "3_4", columns: 4, text: "بِي تِي ثِي جِي حِي خِي دِي ذِي رِي زِي سِي شِي صِي ضِي طِي ظِي عِي غِي فِي قِي", note: "Kasrah bertemu Ya Sukun dibaca panjang (Mad)." },
-      { id: "3_5", columns: 4, text: "بُو تُو ثُو جُو حُو خُو دُو ذُو رُو زُو سُو شُو صُو ضُو طُو ظُو عُو غُو فُو قُو", note: "Dhammah bertemu Wawu Sukun dibaca panjang." }
+      { id: "3_2", columns: 4, dynamicType: 'fathah-kasrah', wordLength: 3, text: "بِتَ فَحِ ضَغِ زِسَ خَدِ", note: "Mesin Acak Dinamis: Campuran Fathah dan Kasrah (Tidak bermakna)." },
+      { id: "3_3", columns: 4, text: "بُ تُ ثُ جُ حُ خُ دُ ذُ رُ زُ سُ شُ صُ ضُ طُ ظُ عُ غُ فُ قُ", note: "Dhammah dibaca 'u'. Bibir dimonyongkan ke depan." },
+      { id: "3_4", columns: 4, dynamicType: 'mixed', wordLength: 3, text: "بُتِثَ كُظِمَ هُجِشُ ظُعِ", note: "Mesin Acak Dinamis: Campuran penuh Fathah, Kasrah & Dhammah!" },
+      { id: "3_5", columns: 4, text: "كُتِبَ قُرِئَ شُرِحَ نُظِرَ صُدِقَ ضُرِبَ غُلِبَ خُلِقَ رُزِقَ جُعِلَ ذُكِرَ حُشِرَ طُبِعَ عُرِفَ لُعِنَ سُئِلَ", note: "Kata bermakna. Harakat mengikuti lazimnya kata/kalimat tersebut." }
     ]
   },
   {
@@ -44,7 +44,7 @@ export const iqraData = [
       { id: "4_2", columns: 4, text: "بٌ تٌُ ثٌ جٌ حٌ خٌ دٌ ذٌ رٌ زٌ سٌ شٌ صٌ ضٌ طٌ ظٌ عٌ غٌ فٌ قٌ", note: "Tanwin Dhammah (un). Mulut monyong lalu kembali netral." },
       { id: "4_3", columns: 4, text: "أَتْ أَثْ أَحْ أَخْ أَذْ أَرْ أَزْ أَسْ أَشْ أَصْ أَضْ أَظْ أَعْ أَغْ أَفْ أَكْ أَلْ أَمْ أَنْ أَهْ", note: "Huruf mati (Sukun). Tahan suaranya, jangan dipantulkan." },
       { id: "4_4", columns: 4, text: "أَبْ إِبْ أُبْ أَجْ إِجْ أُجْ أَدْ إِدْ أُدْ أَطْ إِطْ أُطْ أَقْ إِقْ أُقْ يَبْ يَقْ يَدْ يَجْ يَطْ", note: "Qalqalah (Baju Ditoko). Pantulkan dengan jelas!" },
-      { id: "4_5", columns: 4, text: "مَسْجِدٌ أَكْبَرُ يَلْعَبُ يَشْرَبُ يَقْرَأُ يَكْتُبُ يَنْظُرُ يَسْمَعُ يَعْمَلُ يَحْفَظُ بَحْرٌ قَلْبٌ شَمْسٌ نَجْمٌ بَدْرٌ عَبْدٌ فَجْرٌ خَيْرٌ شَرٌّ مِلْحٌ", note: "Latihan menggabungkan sukun, qalqalah, dan tanwin." }
+      { id: "4_5", columns: 4, text: "يَلْعَبُ يَشْرَبُ يَقْرَأُ يَكْتُبُ يَنْظُرُ يَسْمَعُ يَعْمَلُ يَحْفَظُ يَرْجِعُ يَفْهَمُ يَدْخُلُ يَخْرُجُ مَسْجِدٌ عَيْنٌ شَيْءٌ يَوْمٌ", note: "Kata bermakna. Gabungan sukun, qalqalah, dan tanwin." }
     ]
   },
   {

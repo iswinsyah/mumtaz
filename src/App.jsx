@@ -1402,13 +1402,39 @@ function App() {
                  {selectedIqraJilid.lessons.map((lesson, idx) => (
                    <button key={lesson.id} onClick={() => { 
                      setSelectedIqraLesson(lesson); 
-                     // Pecah kata berdasarkan splitChar (default spasi)
-                     const delimiter = lesson.splitChar || ' ';
-                     let words = lesson.text.split(delimiter).map(w => w.trim()).filter(w => w !== '');
                      
-                     // Fitur Acak Baris (Dinamis) agar pemahaman murni, bukan hafalan posisi
-                     if (lesson.randomize !== false) {
-                       words = words.sort(() => Math.random() - 0.5);
+                     let words = [];
+                     if (lesson.dynamicType) {
+                       // Generator Acak Penuh (Huruf & Harakat) untuk Kata Tidak Bermakna
+                       const ARABIC_LETTERS = ['ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','و','ه','ي'];
+                       const vowels = {
+                         'fathah': ['\u064E'],
+                         'kasrah': ['\u0650'],
+                         'dhammah': ['\u064F'],
+                         'fathah-kasrah': ['\u064E', '\u0650'],
+                         'mixed': ['\u064E', '\u0650', '\u064F']
+                       }[lesson.dynamicType] || ['\u064E'];
+
+                       const wordCount = (lesson.columns || 4) * 5; // Konsisten 5 baris
+                       for (let i = 0; i < wordCount; i++) {
+                          let word = '';
+                          const wordLength = lesson.wordLength || 3;
+                          for (let j = 0; j < wordLength; j++) {
+                             const l = ARABIC_LETTERS[Math.floor(Math.random() * ARABIC_LETTERS.length)];
+                             const v = vowels[Math.floor(Math.random() * vowels.length)];
+                             word += l + v;
+                          }
+                          words.push(word);
+                       }
+                     } else {
+                       // Pecah kata bermakna (lazimnya) berdasarkan splitChar
+                       const delimiter = lesson.splitChar || ' ';
+                       words = lesson.text.split(delimiter).map(w => w.trim()).filter(w => w !== '');
+                       
+                       // Fitur Acak Posisi Kata agar pemahaman murni, bukan hafalan urutan
+                       if (lesson.randomize !== false) {
+                         words = words.sort(() => Math.random() - 0.5);
+                       }
                      }
 
                      const cols = lesson.columns || 4;
