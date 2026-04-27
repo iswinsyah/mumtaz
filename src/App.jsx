@@ -67,6 +67,7 @@ function App() {
   const [currentIqraStep, setCurrentIqraStep] = useState(0); // State penunjuk step aktif
   const [targetData, setTargetData] = useState({ ayatPerHari: 5, juzTarget: 30, targetDate: '2026-12-24' }); // State Target Belajar
   const [showTargetModal, setShowTargetModal] = useState(false); // State Modal Edit Target
+  const [riwayatSetoran, setRiwayatSetoran] = useState(() => JSON.parse(localStorage.getItem('riwayatSetoran') || '[]')); // State Rapot
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   // --- STATE OTENTIKASI & LIMITASI ---
@@ -92,6 +93,11 @@ function App() {
       if (window.speechSynthesis) window.speechSynthesis.cancel(); // Hentikan suara AI jika ganti tab
     };
   }, [activeTab]);
+  
+  // Simpan riwayat setoran otomatis ke penyimpanan HP (localStorage) setiap ada perubahan
+  useEffect(() => {
+    localStorage.setItem('riwayatSetoran', JSON.stringify(riwayatSetoran));
+  }, [riwayatSetoran]);
 
   // Handler untuk fitur Share (Viral / Growth)
   const handleShareApp = async () => {
@@ -509,6 +515,20 @@ function App() {
       }
 
       setScore(result.score);
+      
+      // JIKA MUMTAZ (>= 95), OTOMATIS CATAT KE RAPOT DAN CAPAIAN TARGET
+      if (result.score >= 95) {
+        setRiwayatSetoran(prev => [{
+           id: Date.now(),
+           surah: currentLearnData.surah,
+           ayat: selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`,
+           jumlahAyat: (ayahEnd - ayahStart) + 1,
+           score: result.score,
+           mode: setoranMode === 'tahfidz' ? 'Tahfidz' : 'Tahsin',
+           date: new Date().toISOString()
+        }, ...prev]);
+      }
+      
       // Tampilkan apa yang sebenarnya didengar AI untuk evaluasi kita
       const aiHeardText = result.ai_heard !== undefined ? `[AI Mendengar: "${result.ai_heard}"]\n\n` : `[⚠️ PERINGATAN BUGS: Server yang merespon ini adalah server versi lama! Coba periksa URL GAS bos.]\n\n`;
       setAiNote(aiHeardText + result.note);
@@ -1169,7 +1189,7 @@ function App() {
         );
 
       case 'profile':
-        return <ProfileTab currentUser={currentUser} setCurrentUser={setCurrentUser} setAuthMode={setAuthMode} setShowAuthModal={setShowAuthModal} fileInputRef={fileInputRef} handleAvatarChange={handleAvatarChange} setActiveTab={setActiveTab} targetData={targetData} setShowTargetModal={setShowTargetModal} />;
+        return <ProfileTab currentUser={currentUser} setCurrentUser={setCurrentUser} setAuthMode={setAuthMode} setShowAuthModal={setShowAuthModal} fileInputRef={fileInputRef} handleAvatarChange={handleAvatarChange} setActiveTab={setActiveTab} targetData={targetData} setShowTargetModal={setShowTargetModal} riwayatSetoran={riwayatSetoran} />;
 
       case 'admin':
         return <AdminTab currentUser={currentUser} setActiveTab={setActiveTab} adminUsers={adminUsers} isLoadingAdmin={isLoadingAdmin} />;

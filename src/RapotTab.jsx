@@ -1,7 +1,7 @@
 import React from 'react';
 import { Star, Award, CheckCircle, User } from 'lucide-react';
 
-export default function RapotTab({ setActiveTab }) {
+export default function RapotTab({ setActiveTab, riwayatSetoran }) {
   return (
     <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
        <div className="flex items-center justify-between mb-2">
@@ -22,38 +22,36 @@ export default function RapotTab({ setActiveTab }) {
        </div>
 
        <div className="flex justify-between items-center px-1 pt-3">
-          <h2 className="font-bold text-gray-700">Riwayat Setoran Per Juz</h2>
+          <h2 className="font-bold text-gray-700">Riwayat Setoran (Mumtaz)</h2>
        </div>
        
        <div className="space-y-3">
-         {[
-           { juz: 30, score: 96, label: 'Mumtaz', status: 'Lulus', mode: 'Tahfidz' },
-           { juz: 29, score: 88, label: 'Jayyid Jiddan', status: 'Lulus', mode: 'Tahsin' },
-           { juz: 28, score: 0, status: 'Berjalan', progress: '45%', mode: 'Tahsin' },
-           { juz: 27, score: 0, status: 'Belum', mode: '-' },
-         ].map(item => (
-           <div key={item.juz} className={`p-4 rounded-2xl border flex flex-col gap-3 group transition-colors shadow-sm ${item.score >= 95 ? 'bg-yellow-50/50 border-yellow-200' : 'bg-white border-gray-100'}`}>
+         {!riwayatSetoran || riwayatSetoran.length === 0 ? (
+           <p className="text-center text-xs text-gray-500 py-10">Belum ada riwayat setoran Mumtaz yang tercatat.</p>
+         ) : (
+           riwayatSetoran.map(item => (
+             <div key={item.id} className="p-4 rounded-2xl border flex flex-col gap-3 group transition-colors shadow-sm bg-yellow-50/50 border-yellow-200">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${item.score >= 95 ? 'bg-green-600 text-white' : (item.score > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400')}`}>
-                     {item.juz}
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner bg-green-600 text-white">
+                       <CheckCircle size={24} />
                   </div>
                   <div>
-                    <p className="font-black text-gray-800">Juz {item.juz}</p>
+                      <p className="font-black text-gray-800">{item.surah}</p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      {item.mode !== '-' && <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">{item.mode}</span>}
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                        {item.status === 'Lulus' ? `Skor AI: ${item.score}` : (item.status === 'Berjalan' ? `Progres: ${item.progress}` : 'Belum Mulai')}
-                      </p>
+                        <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">{item.mode}</span>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{item.ayat}</p>
                     </div>
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end">
-                   {item.score >= 95 ? <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-1 rounded font-black uppercase tracking-wider flex items-center gap-1"><CheckCircle size={10}/> Mumtaz</span> : (item.score > 0 ? <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-wider">{item.label}</span> : null)}
+                     <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-1 rounded font-black uppercase tracking-wider flex items-center gap-1"><CheckCircle size={10}/> {item.score}</span>
+                     <span className="text-[9px] text-gray-400 mt-1">{new Date(item.date).toLocaleDateString('id-ID')}</span>
                 </div>
               </div>
-           </div>
-         ))}
+             </div>
+           ))
+         )}
        </div>
     </div>
   );

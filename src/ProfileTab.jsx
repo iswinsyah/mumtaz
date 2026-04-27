@@ -3,7 +3,7 @@ import { User, LogIn, LogOut, Star, Award, BookOpen, Settings, Book } from 'luci
 
 export default function ProfileTab({ 
   currentUser, setCurrentUser, setAuthMode, setShowAuthModal, 
-  fileInputRef, handleAvatarChange, setActiveTab, targetData, setShowTargetModal 
+  fileInputRef, handleAvatarChange, setActiveTab, targetData, setShowTargetModal, riwayatSetoran 
 }) {
   if (!currentUser) {
     return (
@@ -28,6 +28,14 @@ export default function ProfileTab({
       </div>
     );
   }
+
+  // Hitung jumlah ayat yang berhasil Mumtaz pada hari ini
+  const today = new Date().toDateString();
+  const ayatHariIni = (riwayatSetoran || [])
+    .filter(r => new Date(r.date).toDateString() === today)
+    .reduce((sum, r) => sum + (r.jumlahAyat || 0), 0);
+    
+  const progressPercent = Math.min(Math.round((ayatHariIni / targetData.ayatPerHari) * 100), 100);
 
   return (
     <div className="p-4 pb-24 text-center space-y-6">
