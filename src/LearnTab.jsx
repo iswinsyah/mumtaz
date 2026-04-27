@@ -135,7 +135,11 @@ export default function LearnTab({
         <p className="text-xs text-blue-700 leading-relaxed"><b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>10 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.</p>
       </div>
 
-      <button onClick={() => setActiveTab('setor')} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"><Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}</button>
+      {/* Tombol Melayang (Floating Action Button) */}
+      <div className="sticky bottom-6 z-50 pt-2">
+        <button onClick={() => setActiveTab('setor')} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-[0_10px_40px_-10px_rgba(22,163,74,0.6)] flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-green-700"><Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}</button>
+      </div>
+      
     </div>
   );
 }
