@@ -11,6 +11,9 @@ import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
 import { quranData } from './data/QuranData';
 import { iqraData } from './data/IqraData';
+import HomeTab from './components/HomeTab';
+import TajwidTab from './components/TajwidTab';
+import LevelTab from './components/LevelTab';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
@@ -24,60 +27,6 @@ const MOCK_QURAN = {
 };
 
 const APP_VERSION = "1.3.0"; // Versi Premium Voice (WaveNet)
-
-const TAJWID_LESSONS = [
-  {
-    id: 'nun_mati',
-    title: 'Hukum Nun Mati & Tanwin',
-    desc: 'Aturan baca Nun Sukun (نْ) atau Tanwin (ـً ـٍ ـٌ)',
-    content: "1. Izhar Halqi: Dibaca jelas (ء, ه, ع, ح, غ, خ)\n2. Idgham Bighunnah: Masuk dengan dengung (ي, ن, م, و)\n3. Idgham Bilaghunnah: Masuk tanpa dengung (ل, ر)\n4. Iqlab: Berubah jadi suara Mim (ب)\n5. Ikhfa Haqiqi: Samar & mendengung (15 huruf sisanya)",
-    examples: [
-      { id: 'nun_1', text: "كُفُوًا أَحَدٌ", type: "Izhar Halqi (Tanwin + Alif)", surah: 112, ayah: 4, label: "Al-Ikhlas: 4" },
-      { id: 'nun_2', text: "مِن شَرِّ", type: "Ikhfa Haqiqi (Nun Sukun + Syin)", surah: 113, ayah: 2, label: "Al-Falaq: 2" }
-    ]
-  },
-  {
-    id: 'mim_mati',
-    title: 'Hukum Mim Mati',
-    desc: 'Aturan baca Mim Sukun (مْ) bertemu huruf hijaiyah',
-    content: "1. Ikhfa Syafawi: Dibaca samar berdengung di bibir (ب)\n2. Idgham Mimi: Masuk berdengung (م)\n3. Izhar Syafawi: Dibaca jelas di bibir (Selain م dan ب)",
-    examples: [
-      { id: 'mim_1', text: "تَرْمِيهِم بِحِجَارَةٍ", type: "Ikhfa Syafawi", surah: 105, ayah: 4, label: "Al-Fil: 4" },
-      { id: 'mim_2', text: "أَطْعَمَهُم مِّن جُوعٍ", type: "Idgham Mimi", surah: 106, ayah: 4, label: "Quraish: 4" },
-      { id: 'mim_3', text: "لَمْ يَلِدْ وَلَمْ يُولَدْ", type: "Izhar Syafawi", surah: 112, ayah: 3, label: "Al-Ikhlas: 3" }
-    ]
-  },
-  {
-    id: 'mad',
-    title: 'Hukum Mad (Panjang)',
-    desc: 'Aturan memanjangkan suara pada huruf-huruf tertentu',
-    content: "1. Mad Thabi'i: Panjang 2 harakat (Huruf Alif, Wawu sukun, Ya' sukun).\n2. Mad Wajib Muttasil: Mad Thabi'i bertemu hamzah dalam 1 kata (4-5 harakat).\n3. Mad Jaiz Munfasil: Mad Thabi'i bertemu hamzah beda kata (2-5 harakat).\n4. Mad Aridh Lissukun: Mad dibaca saat waqaf/berhenti (2, 4, 6 harakat).\n5. Mad Lazim: Mad bertemu huruf bertasydid (6 harakat).",
-    examples: [
-      { id: 'mad_1', text: "إِذَا جَآءَ", type: "Mad Wajib Muttasil", surah: 110, ayah: 1, label: "An-Nasr: 1" },
-      { id: 'mad_2', text: "فِى عَمَدٍ", type: "Mad Thabi'i (Ya Sukun)", surah: 104, ayah: 9, label: "Al-Humazah: 9" }
-    ]
-  },
-  {
-    id: 'makhraj',
-    title: 'Makharijul Huruf',
-    desc: 'Tempat keluarnya huruf-huruf hijaiyah',
-    content: "1. Al-Jauf (Rongga Mulut): Tempat keluarnya huruf Mad.\n2. Al-Halq (Tenggorokan): Bawah (ء, ه), Tengah (ع, ح), Atas (غ, خ).\n3. Al-Lisan (Lidah): Terbanyak, 18 huruf (Qof, Kaf, Jim, dll).\n4. Asy-Syafatain (Bibir): Fa, Wawu, Ba, Mim.\n5. Al-Khaisyum (Hidung): Tempat keluarnya suara Ghunnah/Dengung.",
-    examples: [
-      { id: 'makh_1', text: "خَلَقَ", type: "Tenggorokan Atas (Kha)", surah: 113, ayah: 2, label: "Al-Falaq: 2" },
-      { id: 'makh_2', text: "قُلْ أَعُوذُ", type: "Pangkal Lidah (Qof)", surah: 114, ayah: 1, label: "An-Nas: 1" }
-    ]
-  },
-  {
-    id: 'qalqalah',
-    title: 'Hukum Qalqalah',
-    desc: 'Pantulan suara saat huruf tertentu disukunkan',
-    content: "Huruf Qalqalah: ق, ط, ب, ج, د (Baju Ditoko)\n\n1. Qalqalah Sugra (Kecil): Huruf mati di tengah kalimat. Pantulan ringan.\n2. Qalqalah Kubra (Besar): Huruf mati karena diwaqafkan (berhenti) di akhir ayat. Pantulan lebih kuat.",
-    examples: [
-      { id: 'qal_1', text: "ٱلْأَبْتَرُ", type: "Qalqalah Sugra (Ba Sukun)", surah: 108, ayah: 3, label: "Al-Kautsar: 3" },
-      { id: 'qal_2', text: "ٱلْفَلَقِ", type: "Qalqalah Kubra (Qof Waqaf)", surah: 113, ayah: 1, label: "Al-Falaq: 1" }
-    ]
-  }
-];
 
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
@@ -120,7 +69,6 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false); // Menampilkan layar login/daftar
   const [authMode, setAuthMode] = useState('login'); // 'login' atau 'signup'
   const [showPassword, setShowPassword] = useState(false); // Toggle lihat password
-  const [expandedTajwid, setExpandedTajwid] = useState(null); // State accordion tajwid
   const [adminUsers, setAdminUsers] = useState([]); // Data user untuk dashboard admin
   const [isLoadingAdmin, setIsLoadingAdmin] = useState(false); // Loading dashboard admin
 
@@ -678,175 +626,10 @@ function App() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
-        return (
-          <div className="space-y-4 p-4 pb-24">
-            <div className="flex justify-between items-center px-2">
-              <div className="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/iswinsyah/Gambar/refs/heads/main/logo%20Tahfidz.jfif" alt="Logo At Tahfidz" className="w-10 h-10 rounded-xl shadow-sm object-cover border border-green-100" />
-                <h1 className="text-2xl font-bold text-green-800">At Tahfidz</h1>
-              </div>
-              <div className="flex gap-3">
-                <button className="p-2 bg-white rounded-full shadow-sm text-gray-600"><Bell size={20} /></button>
-                <button className="p-2 bg-white rounded-full shadow-sm text-gray-600"><Settings size={20} /></button>
-              </div>
-            </div>
-
-            {/* Tombol Share Viral (Mencolok) */}
-            <button onClick={handleShareApp} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 p-4 rounded-2xl shadow-lg shadow-blue-200 text-white flex items-center justify-between group active:scale-95 transition-all overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-              <div className="text-left relative z-10">
-                <h3 className="font-black text-lg flex items-center gap-2"><Share2 size={18} className="animate-bounce" /> Ajak Teman</h3>
-                <p className="text-[10px] text-blue-50 mt-1 opacity-90 font-medium leading-relaxed">Bagikan ke grup WA. Raih pahala jariyah dari setiap huruf yang mereka baca.</p>
-              </div>
-              <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors relative z-10 shrink-0">
-                <ChevronRight size={20} />
-              </div>
-            </button>
-
-            {/* Tombol Wakaf / Payment Gateway (Mencolok) */}
-            <button onClick={() => { setPaymentStep('form'); setShowPaymentGateway(true); }} className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 p-4 rounded-2xl shadow-lg shadow-yellow-200 text-yellow-900 flex items-center justify-between group active:scale-95 transition-all overflow-hidden relative mt-3">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-              <div className="text-left relative z-10">
-                <h3 className="font-black text-lg flex items-center gap-2"><Heart size={18} className="animate-pulse text-red-500" fill="currentColor"/> Wakaf & Infaq</h3>
-                <p className="text-[10px] text-yellow-900/80 mt-1 font-medium leading-relaxed">Dukung operasional AI At Tahfidz. Pembayaran otomatis via Payment Gateway.</p>
-              </div>
-              <div className="bg-white/30 p-2 rounded-xl group-hover:bg-white/40 transition-colors relative z-10 shrink-0">
-                <ChevronRight size={20} />
-              </div>
-            </button>
-
-            {/* Ethical Ads / Sponsorship Banner */}
-            <a href="https://www.bwa.id/" target="_blank" rel="noreferrer" className="block bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all">
-              <div className="relative z-10 space-y-2">
-                <div className="bg-white/20 w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Sponsor Ad</div>
-                <h3 className="font-bold text-lg">Wakaf Al Quran dan Pembinaan</h3>
-                <p className="text-xs text-green-100">Bantu 1000 santri di pedalaman mendapatkan Mushaf baru.</p>
-                <div className="mt-2 w-fit bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
-                  <DollarSign size={14} /> Beri Kontribusi
-                </div>
-              </div>
-              <Heart className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={120} />
-            </a>
-
-              {/* Promosi Web Yayasan / Sekolah */}
-              <a href="https://villaquranbaronmalang.com" target="_blank" rel="noreferrer" className="block bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:border-green-300 transition-all group relative overflow-hidden cursor-pointer active:scale-95">
-                <div className="flex gap-4 items-center">
-                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-200 shrink-0 relative">
-                    <img src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=300&q=80" alt="Villa Quran" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="bg-green-100 text-green-700 w-fit px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">Penerimaan Santri Baru</div>
-                    <h3 className="font-bold text-sm text-gray-800 leading-tight">Pesantren Villa Quran Baron Malang</h3>
-                    <p className="text-[10px] text-gray-500 leading-tight line-clamp-2">Cetak generasi Qur'ani berakhlak mulia dan bersanad. Klik untuk info selengkapnya.</p>
-                  </div>
-                  <div className="shrink-0 text-gray-300 group-hover:text-green-500 transition-colors pr-2">
-                    <ExternalLink size={20} />
-                  </div>
-                </div>
-              </a>
-
-            {/* Social Proof / Smart Threshold Banner */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-green-100 flex items-center gap-3">
-              <div className="flex -space-x-3 shrink-0">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Umar" className="w-8 h-8 rounded-full border-2 border-white bg-blue-100" alt="user"/>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ali" className="w-8 h-8 rounded-full border-2 border-white bg-green-100" alt="user"/>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aisyah" className="w-8 h-8 rounded-full border-2 border-white bg-yellow-100" alt="user"/>
-                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-black text-gray-400">+</div>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold text-gray-800 leading-tight">
-                  {(() => {
-                    const simulatedUserCount = 45; // TODO: Ganti dengan data real dari API database nanti
-                    if (simulatedUserCount < 1000) return "Jadilah pelopor! Bergabung bersama angkatan pertama Hufadz digital.";
-                    if (simulatedUserCount <= 5000) return `Telah dipercaya oleh ${(Math.floor(simulatedUserCount / 100) * 100).toLocaleString('id-ID')}+ pejuang Al-Qur'an.`;
-                    return `Bergabunglah bersama ${(Math.floor(simulatedUserCount / 1000) * 1000).toLocaleString('id-ID')}+ Hufadz lainnya!`;
-                  })()}
-                </p>
-              </div>
-            </div>
-
-            {/* Social Media Feed for Hufadz (24 Hours Ephemeral) */}
-            <div className="flex justify-between items-center px-2 pt-2">
-              <h2 className="font-bold text-gray-700">Kabar Hufadz</h2>
-              <span className="text-[9px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">⏳ Live 24 Jam</span>
-            </div>
-            
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest flex items-center gap-1"><Award size={10}/> Mumtaz</div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-green-800 overflow-hidden">
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmad" alt="avatar" />
-                </div>
-                <div className="flex-1 mt-1">
-                  <p className="font-bold text-sm leading-tight">Ahmad (Karyawan) <span className="text-xs">✨</span></p>
-                  <p className="text-[10px] text-green-600 font-bold mt-0.5">Berhasil lulus Tahfidz Juz 30</p>
-                </div>
-                <div className="text-[9px] text-gray-400 font-medium text-right leading-tight">2 jam lalu<br/><span className="text-red-400 font-bold">Hilang: 22j lagi</span></div>
-              </div>
-              <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                "Alhamdulillah akhirnya bisa lulus Juz 30 setelah diulang 3x. Semangat terus buat teman-teman yang lagi ngafal di sela-sela jam kerja! 🔥🚀"
-              </p>
-              <div className="flex gap-5 pt-2">
-                <button className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors"><Heart size={16} /> 42</button>
-                <button className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue-500 transition-colors"><MessageCircle size={16} /> 12 Komentar</button>
-              </div>
-            </div>
-          </div>
-        );
+        return <HomeTab setActiveTab={setActiveTab} setPaymentStep={setPaymentStep} setShowPaymentGateway={setShowPaymentGateway} handleShareApp={handleShareApp} />;
         
       case 'tajwid':
-        return (
-          <div className="p-4 pb-24 space-y-4 animate-in fade-in duration-300">
-             <h1 className="text-2xl font-black text-gray-800 tracking-tight">Ilmu Tajwid</h1>
-             <p className="text-sm text-gray-500">Pelajari ringkasan dasar ilmu tajwid sebelum mulai menyetorkan hafalan Anda.</p>
-             
-             <div className="space-y-3 mt-4">
-               {TAJWID_LESSONS.map(lesson => (
-                  <div key={lesson.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all">
-                     <button 
-                       onClick={() => setExpandedTajwid(expandedTajwid === lesson.id ? null : lesson.id)}
-                       className="w-full p-4 flex justify-between items-center text-left bg-white hover:bg-green-50 transition-colors"
-                     >
-                        <div>
-                           <h3 className="font-bold text-green-800">{lesson.title}</h3>
-                           <p className="text-[10px] text-gray-500 mt-0.5">{lesson.desc}</p>
-                        </div>
-                        <ChevronRight className={`text-green-600 transition-transform duration-300 ${expandedTajwid === lesson.id ? 'rotate-90' : ''}`} size={20} />
-                     </button>
-                     {expandedTajwid === lesson.id && (
-                       <div className="p-4 pt-0 border-t border-gray-100 bg-green-50/30">
-                          <div className="text-[12px] text-gray-700 leading-loose whitespace-pre-line font-medium mb-3">
-                             {lesson.content}
-                          </div>
-                          {lesson.examples && (
-                            <div className="space-y-2 mt-3 pt-3 border-t border-green-100">
-                              <p className="text-[10px] font-black text-green-700 uppercase tracking-widest flex items-center gap-1"><Volume2 size={12}/> Dengarkan Contoh Ayat</p>
-                              {lesson.examples.map(ex => (
-                                <button 
-                                  key={ex.id}
-                                  onClick={() => handlePlayTajwid(ex.surah, ex.ayah, ex.id)}
-                                  className="w-full flex items-center justify-between p-3 bg-white border border-green-200 rounded-xl hover:bg-green-100 active:scale-95 transition-all group shadow-sm"
-                                >
-                                  <div className="flex items-center gap-3 text-left">
-                                    <div className={`p-2.5 rounded-full shadow-sm transition-colors ${playingAyah === ex.id ? 'bg-green-600 text-white' : 'bg-green-50 text-green-600 group-hover:bg-green-200'}`}>
-                                      {playingAyah === ex.id ? <Volume2 size={16} className="animate-pulse" /> : <Play size={16} />}
-                                    </div>
-                                    <div>
-                                      <p className="font-bold text-gray-800 text-xs">{ex.type}</p>
-                                      <p className="text-[10px] text-gray-500 mt-0.5">{ex.label} <span className="font-serif text-sm ml-1.5 text-green-700">{ex.text}</span></p>
-                                    </div>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                       </div>
-                     )}
-                  </div>
-               ))}
-             </div>
-          </div>
-        );
+        return <TajwidTab handlePlayTajwid={handlePlayTajwid} playingAyah={playingAyah} />;
 
       case 'learn': {
         // Tampilkan loading spinner saat data sedang diambil dari API
@@ -1237,38 +1020,7 @@ function App() {
       }
 
   case 'level':
-    return (
-      <div className="p-4 pb-24 space-y-6 animate-in fade-in duration-300">
-         <h1 className="text-2xl font-black text-gray-800 tracking-tight">Pilih Level Belajar</h1>
-         <p className="text-sm text-gray-500">Tentukan target belajar Anda hari ini sesuai dengan kemampuan bacaan.</p>
-
-         <div className="space-y-4">
-           <button onClick={() => { setActiveTab('tilawah'); setSelectedIqraJilid(null); setSelectedIqraLesson(null); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
-             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">1</div>
-             <div>
-               <h3 className="font-black text-gray-800 text-lg">Tilawah (Dasar)</h3>
-               <p className="text-xs text-gray-500 mt-1">Untuk pemula yang belum bisa membaca huruf Al-Qur'an.</p>
-             </div>
-           </button>
-
-           <button onClick={() => { setActiveTab('quran'); setSetoranMode('tahsin'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
-             <div className="w-14 h-14 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">2</div>
-             <div>
-               <h3 className="font-black text-gray-800 text-lg">Tahsin (Perbaikan)</h3>
-               <p className="text-xs text-gray-500 mt-1">Fokus memperbaiki panjang pendek & makhraj (tajwid).</p>
-             </div>
-           </button>
-
-           <button onClick={() => { setActiveTab('quran'); setSetoranMode('tahfidz'); }} className="w-full bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:border-green-300 hover:shadow-md transition-all text-left flex gap-4 items-center group">
-             <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform shrink-0">3</div>
-             <div>
-               <h3 className="font-black text-gray-800 text-lg">Tahfidz (Hafalan)</h3>
-               <p className="text-xs text-gray-500 mt-1">Bacaan standar, lanjut menghafal mandiri (Setoran Buta).</p>
-             </div>
-           </button>
-         </div>
-      </div>
-    );
+    return <LevelTab setActiveTab={setActiveTab} setSelectedIqraJilid={setSelectedIqraJilid} setSelectedIqraLesson={setSelectedIqraLesson} setSetoranMode={setSetoranMode} />;
 
   case 'tilawah':
         if (selectedIqraLesson) {
