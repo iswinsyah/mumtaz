@@ -11,9 +11,9 @@ import { useQuranSpeech } from './hooks/useQuranSpeech';
 import { calculateTajwidScore } from './utils/scoring';
 import { quranData } from './data/QuranData';
 import { iqraData } from './data/IqraData';
-import HomeTab from './components/HomeTab';
-import TajwidTab from './components/TajwidTab';
-import LevelTab from './components/LevelTab';
+import HomeTab from './HomeTab';
+import TajwidTab from './TajwidTab';
+import LevelTab from './LevelTab';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
