@@ -3,13 +3,13 @@ import { Bell, Settings, Share2, ChevronRight, Heart, DollarSign, ExternalLink, 
 
 export default function HomeTab({ setActiveTab, setPaymentStep, setShowPaymentGateway, handleShareApp }) {
   return (
-    <div className="space-y-4 p-4 pb-24">
-      <div className="flex justify-between items-center px-2">
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 p-4 pb-24 lg:pb-12 lg:pt-8">
+      <div className="flex justify-between items-center px-2 lg:mb-2">
+        <div className="flex items-center gap-3 lg:hidden">
           <img src="https://raw.githubusercontent.com/iswinsyah/Gambar/refs/heads/main/logo%20Tahfidz.jfif" alt="Logo At Tahfidz" className="w-10 h-10 rounded-xl shadow-sm object-cover border border-green-100" />
           <h1 className="text-2xl font-bold text-green-800">At Tahfidz</h1>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 ml-auto">
           <button className="p-2 bg-white rounded-full shadow-sm text-gray-600"><Bell size={20} /></button>
           <button className="p-2 bg-white rounded-full shadow-sm text-gray-600"><Settings size={20} /></button>
         </div>

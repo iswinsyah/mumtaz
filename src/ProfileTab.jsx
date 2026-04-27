@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogIn, LogOut, Star, Award, BookOpen, Settings, Book } from 'lucide-react';
+import { User, LogIn, LogOut, Star, Award, BookOpen, Settings, Book, Flame, Crown, Lock, Shield, Zap, Medal } from 'lucide-react';
 
 export default function ProfileTab({ 
   currentUser, setCurrentUser, setAuthMode, setShowAuthModal, 
@@ -36,6 +36,20 @@ export default function ProfileTab({
     .reduce((sum, r) => sum + (r.jumlahAyat || 0), 0);
     
   const progressPercent = Math.min(Math.round((ayatHariIni / targetData.ayatPerHari) * 100), 100);
+
+  // Logika Gamifikasi: Hitung Badge yang terbuka
+  const hasFirstBlood = (riwayatSetoran || []).length > 0;
+  const hasFiveMumtaz = (riwayatSetoran || []).length >= 5;
+  const unlockedCount = (hasFirstBlood ? 1 : 0) + (hasFiveMumtaz ? 1 : 0);
+
+  const BADGES = [
+    { id: 1, title: "Langkah\nPertama", icon: Flame, isUnlocked: hasFirstBlood, bg: "from-orange-50 to-orange-100/80 border-orange-200", iconBg: "bg-orange-400 shadow-orange-200", text: "text-orange-800" },
+    { id: 2, title: "Mumtaz\nHunter", icon: Crown, isUnlocked: hasFiveMumtaz, bg: "from-yellow-50 to-yellow-100/80 border-yellow-200", iconBg: "bg-yellow-400 shadow-yellow-200", text: "text-yellow-800" },
+    { id: 3, title: "7 Hari\nBeruntun", icon: Zap, isUnlocked: false, bg: "from-blue-50 to-blue-100/80 border-blue-200", iconBg: "bg-blue-400 shadow-blue-200", text: "text-blue-800" },
+    { id: 4, title: "Hafidz\nJuz 30", icon: Medal, isUnlocked: false, bg: "from-green-50 to-green-100/80 border-green-200", iconBg: "bg-green-400 shadow-green-200", text: "text-green-800" },
+    { id: 5, title: "Tahsin\nMaster", icon: Shield, isUnlocked: false, bg: "from-purple-50 to-purple-100/80 border-purple-200", iconBg: "bg-purple-400 shadow-purple-200", text: "text-purple-800" },
+    { id: 6, title: "Pencari\nSanad", icon: Award, isUnlocked: false, bg: "from-rose-50 to-rose-100/80 border-rose-200", iconBg: "bg-rose-400 shadow-rose-200", text: "text-rose-800" },
+  ];
 
   return (
     <div className="p-4 pb-24 text-center space-y-6">
@@ -96,6 +110,27 @@ export default function ProfileTab({
           <div className="bg-white p-3 rounded-2xl border border-gray-100">
              <p className="text-xl font-black text-green-700">2</p>
              <p className="text-[10px] font-bold text-gray-400 uppercase">Juz Mutqin</p>
+          </div>
+       </div>
+
+       {/* Koleksi Trophy & Badge */}
+       <div className="mt-8 text-left space-y-3">
+          <div className="flex justify-between items-end px-1">
+            <h3 className="font-bold text-gray-800">Koleksi Badge</h3>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{unlockedCount}/6 Terbuka</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {BADGES.map(badge => {
+               const Icon = badge.icon;
+               return (
+                 <div key={badge.id} className={`p-3 rounded-2xl flex flex-col items-center justify-center text-center border shadow-sm transition-all ${badge.isUnlocked ? `bg-gradient-to-b ${badge.bg}` : 'bg-gray-50 border-gray-100 grayscale opacity-60'}`}>
+                   <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 shadow-inner ${badge.isUnlocked ? `${badge.iconBg} text-white` : 'bg-gray-200 text-gray-400'}`}>
+                     {badge.isUnlocked ? <Icon size={20} className="fill-current"/> : <Lock size={16}/>}
+                   </div>
+                   <p className={`text-[9px] font-black uppercase leading-tight whitespace-pre-line ${badge.isUnlocked ? badge.text : 'text-gray-400'}`}>{badge.title}</p>
+                 </div>
+               );
+            })}
           </div>
        </div>
 

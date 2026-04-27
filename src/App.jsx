@@ -20,6 +20,7 @@ import AdminTab from './AdminTab';
 import QuranTab from './QuranTab';
 import LearnTab from './LearnTab';
 import SetorTab from './SetorTab';
+import AuthModal from './AuthModal';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
@@ -1384,261 +1385,32 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-[800px] bg-gray-50 shadow-2xl rounded-[3.5rem] border-[12px] border-gray-900 overflow-hidden relative font-sans flex flex-col text-gray-800 select-none">
-      {/* iOS Style Status Bar */}
-      <div className="bg-white h-12 flex justify-between px-10 items-end pb-2 text-[12px] font-bold">
-        <span>9:41</span>
-        <div className="bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]">
-          PREMIUM VOICE V1.3.0
-        </div>
-        <div className="flex gap-1.5 items-center">
-          <div className="w-4 h-2 bg-gray-300 rounded-[2px] relative">
-             <div className="absolute right-[-2px] top-0.5 w-1 h-1 bg-gray-300 rounded-full"></div>
-             <div className="absolute inset-0 bg-green-500 w-[60%] m-[1px] rounded-[1px]"></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto bg-gray-50">
-        {renderTabContent()}
+    <div className="w-full h-[100dvh] lg:h-screen bg-gray-50 overflow-hidden relative font-sans flex flex-col lg:flex-row text-gray-800 select-none">
+      
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 order-first lg:order-last flex justify-center w-full">
+         <div className="w-full max-w-md lg:max-w-2xl relative bg-white lg:shadow-sm lg:border-x border-gray-100 min-h-full">
+           {renderTabContent()}
+         </div>
       </div>
 
       {/* Auth Modal (Login / Signup) */}
-      {showAuthModal && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[150] flex flex-col justify-end sm:justify-center animate-in fade-in duration-300">
-          <div className="bg-white w-full max-h-[90%] sm:rounded-3xl rounded-t-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-500">
-            
-            <div className="flex justify-center pt-4 pb-2 shrink-0">
-               <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
-            </div>
-            <button onClick={() => {setShowAuthModal(false); setShowPassword(false);}} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
-
-            <div className="px-6 pb-2 shrink-0">
-              <h3 className="text-2xl font-black text-gray-800 tracking-tight">
-                {authMode === 'login' ? 'Selamat Datang' : 'Gabung At Tahfidz'}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                {authMode === 'login' 
-                  ? 'Lanjutkan perjalanan menghafalmu hari ini.' 
-                  : 'Daftar sekarang untuk buka akses evaluasi AI tanpa batas.'}
-              </p>
-            </div>
-
-            <div className="overflow-y-auto px-6 pb-8 pt-4 flex-1">
-              {authMode === 'login' ? (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.target);
-                  const inputUsername = fd.get('username');
-                  const inputCredential = fd.get('password');
-                  
-                  // Jalur Khusus Super Admin
-                  if (inputUsername === 'winsyah' && inputCredential === 'Khilafet@1924') {
-                    setCurrentUser({ name: "Iswinsyah", username: "winsyah", isPremium: true, isAdmin: true });
-                    setShowAuthModal(false);
-                  } else {
-                    const submitBtn = e.target.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerText;
-                    submitBtn.innerText = "⏳ Sedang Masuk...";
-                    submitBtn.disabled = true;
-
-                    try {
-                      const res = await fetch('/api/login.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: inputUsername, password: inputCredential })
-                      });
-                      const result = await res.json();
-                      
-                      if (result.status === 'success') {
-                        setCurrentUser({ 
-                          name: result.user.name, 
-                          username: result.user.username, 
-                          isPremium: result.user.isPremium,
-                          avatar: result.user.avatar // Ambil avatar dari database
-                        });
-                        setShowAuthModal(false);
-                      } else {
-                        alert("Gagal masuk: " + result.message);
-                      }
-                    } catch (err) {
-                      alert("Gagal terhubung ke server database Hostinger. Pastikan Anda mengakses via website live.");
-                    } finally {
-                      submitBtn.innerText = originalText;
-                      submitBtn.disabled = false;
-                    }
-                  }
-                }} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Username</label>
-                    <input name="username" type="text" required placeholder="Masukkan username" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Password</label>
-                    <div className="relative">
-                      <input name="password" type={showPassword ? "text" : "password"} required placeholder="Masukkan Password" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                      <button 
-                        type="button" 
-                        onClick={() => setShowPassword(!showPassword)} 
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-600 p-1 transition-colors"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                  <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
-                    Masuk Sekarang
-                  </button>
-                  <p className="text-center text-xs text-gray-500 pt-4">
-                    Belum punya akun? <button type="button" onClick={() => {setAuthMode('signup'); setShowPassword(false);}} className="font-bold text-green-600 underline">Daftar di sini</button>
-                  </p>
-                </form>
-              ) : (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.target);
-                  const submitBtn = e.target.querySelector('button[type="submit"]');
-                  const originalText = submitBtn.innerText;
-                  submitBtn.innerText = "⏳ Sedang Mendaftar...";
-                  submitBtn.disabled = true;
-                  
-                  const userData = {
-                    fullname: fd.get('fullname'),
-                    username: fd.get('username'),
-                    password: fd.get('password'),
-                    whatsapp: fd.get('whatsapp'),
-                    email: fd.get('email'),
-                    gender: fd.get('gender'),
-                    dob: fd.get('dob'),
-                    domicile: fd.get('domicile'),
-                    infaq: fd.get('infaq')
-                  };
-
-                  try {
-                    const res = await fetch('/api/register.php', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(userData)
-                    });
-                    const result = await res.json();
-                    
-                    if (result.status === 'success') {
-                      setCurrentUser({ name: userData.fullname, username: userData.username, isPremium: true });
-                      setShowAuthModal(false);
-                      alert("Alhamdulillah, pendaftaran berhasil! Data telah tersimpan di Database.");
-                    } else {
-                      alert("Gagal mendaftar: " + result.message);
-                    }
-                  } catch (err) {
-                    alert("Gagal terhubung ke server database Hostinger. Pastikan Anda mencobanya di website live, bukan di lokal.");
-                  } finally {
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                  }
-                }} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Nama Lengkap</label>
-                    <input name="fullname" type="text" required placeholder="Sesuai Tanda Pengenal" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600 ml-1">Username</label>
-                      <input name="username" type="text" required placeholder="Panggilan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600 ml-1">Password</label>
-                      <div className="relative">
-                        <input name="password" type={showPassword ? "text" : "password"} required placeholder="Katasandi" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-10 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-600 p-1 transition-colors">
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Nomor WhatsApp</label>
-                    <input name="whatsapp" type="tel" required placeholder="Contoh: 08123456789" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Email</label>
-                    <input name="email" type="email" required placeholder="Alamat Email Aktif" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600 ml-1">Jenis Kelamin</label>
-                      <select name="gender" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all">
-                        <option value="">Pilih...</option>
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600 ml-1">Tanggal Lahir</label>
-                      <input name="dob" type="date" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all" />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 ml-1">Domisili</label>
-                    <input name="domicile" type="text" required placeholder="Contoh: Jakarta Selatan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                  </div>
-
-                  <div className="space-y-2 pt-2 pb-2">
-                    <label className="text-xs font-bold text-green-700 ml-1 flex items-center gap-1"><Lock size={12}/> Pilihan Infaq Akses (Bulanan)</label>
-                    <select name="infaq" required className="w-full bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all font-semibold">
-                      <option value="100000">💎 Donatur - Rp 100.000 (Subsidi User Lain)</option>
-                      <option value="50000">🌟 Premium - Rp 50.000 (Bebas Limit)</option>
-                      <option value="25000">⭐ Standar - Rp 25.000 (Bebas Limit)</option>
-                      <option value="15000">✨ Pelajar - Rp 15.000 (Bebas Limit)</option>
-                      <option value="0">⏳ Lewati & Coba Dulu (Bebas Akses)</option>
-                    </select>
-                  </div>
-
-                  <div className="bg-green-50/50 border border-green-100 p-3.5 rounded-xl mt-2 mb-4 shadow-sm">
-                    <h4 className="text-[11px] font-black text-green-800 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Heart size={12} className="text-green-600" /> Ketentuan & Alokasi Infaq
-                    </h4>
-                    <div className="text-[10px] text-gray-600 leading-relaxed space-y-1.5">
-                      <p>1. Dengan mendaftar, Anda menyetujui penggunaan wajar aplikasi At Tahfidz.</p>
-                      <p>2. Seluruh dana infaq yang terkumpul akan dialokasikan murni untuk:</p>
-                      <ul className="list-disc pl-4 font-bold text-gray-700">
-                        <li>Biaya operasional server AI.</li>
-                        <li>Wakaf Pembangunan Pesantren Villa Quran.</li>
-                      </ul>
-                    </div>
-                    <label className="flex items-start gap-2 cursor-pointer mt-3 pt-3 border-t border-green-100">
-                      <input type="checkbox" required className="mt-0.5 w-3.5 h-3.5 accent-green-600 rounded cursor-pointer" />
-                      <span className="text-[10px] font-bold text-gray-700 leading-tight">Saya setuju dengan ketentuan di atas dan berniat infaq lillahi ta'ala.</span>
-                    </label>
-
-                    <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'manual' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white'}`}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center"><Landmark size={20}/></div>
-                        <div>
-                          <p className="font-bold text-sm text-gray-800">Transfer Bank Manual</p>
-                          <p className="text-[10px] text-gray-500">Verifikasi Admin (BSI, Mandiri, BCA)</p>
-                        </div>
-                      </div>
-                      <input type="radio" name="method" value="manual" checked={paymentMethod === 'manual'} onChange={() => setPaymentMethod('manual')} className="w-4 h-4 accent-green-600" />
-                    </label>
-                  </div>
-
-                  <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">
-                    Daftar & Lanjutkan
-                  </button>
-                  <p className="text-center text-xs text-gray-500 pt-3 pb-4">
-                    Sudah punya akun? <button type="button" onClick={() => {setAuthMode('login'); setShowPassword(false);}} className="font-bold text-green-600 underline">Masuk di sini</button>
-                  </p>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <AuthModal 
+        showAuthModal={showAuthModal} 
+        setShowAuthModal={setShowAuthModal} 
+        authMode={authMode} 
+        setAuthMode={setAuthMode} 
+        showPassword={showPassword} 
+        setShowPassword={setShowPassword} 
+        setCurrentUser={setCurrentUser} 
+        paymentMethod={paymentMethod} 
+        setPaymentMethod={setPaymentMethod} 
+      />
 
       {/* Payment Gateway Modal (Dummy / Demo Investor) */}
       {showPaymentGateway && (
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[160] flex flex-col justify-end animate-in fade-in duration-300">
-          <div className="bg-gray-50 w-full max-h-[90%] rounded-t-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-500 overflow-hidden">
+          <div className="bg-gray-50 w-full sm:max-w-md mx-auto max-h-[90%] sm:rounded-3xl rounded-t-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-500 overflow-hidden">
             <div className="flex justify-center pt-4 pb-2 shrink-0 bg-white border-b border-gray-100">
                <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
             </div>
@@ -1747,7 +1519,7 @@ function App() {
       {/* Syukur/Sedekah Modal */}
       {showSedekah && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end justify-center animate-in fade-in duration-300">
-          <div className="bg-white w-full rounded-t-[3rem] p-8 pb-12 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] relative">
+          <div className="bg-white w-full sm:max-w-md mx-auto sm:rounded-3xl rounded-t-[3rem] p-8 pb-12 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] relative">
              <div className="flex justify-center">
                 <div className="w-16 h-1.5 bg-gray-100 rounded-full"></div>
              </div>
@@ -1781,7 +1553,7 @@ function App() {
       {/* Modal Pengaturan Target Belajar */}
       {showTargetModal && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[160] flex items-end justify-center animate-in fade-in duration-300">
-          <div className="bg-white w-full rounded-t-[2.5rem] p-6 pb-10 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-2xl relative">
+          <div className="bg-white w-full sm:max-w-md mx-auto sm:rounded-3xl rounded-t-[2.5rem] p-6 pb-10 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-2xl relative">
              <div className="flex justify-center mb-2">
                 <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
              </div>
@@ -1821,40 +1593,38 @@ function App() {
         </div>
       )}
 
-      {/* Bottom Navigation Bar */}
-      <div className="h-24 bg-white/80 backdrop-blur-md border-t border-gray-100 flex justify-around items-center px-6 pb-6 relative z-50">
-        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center transition-all ${activeTab === 'home' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Sosial</span>
-        </button>
-        <button onClick={() => setActiveTab('tajwid')} className={`flex flex-col items-center transition-all ${activeTab === 'tajwid' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Tajwid</span>
-        </button>
-        <button onClick={() => setActiveTab('level')} className={`flex flex-col items-center transition-all ${activeTab === 'level' || activeTab === 'tilawah' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <Star size={22} fill={activeTab === 'level' || activeTab === 'tilawah' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Level</span>
-        </button>
+      {/* Sidebar (Desktop) / Bottom Nav (Mobile) */}
+      <div className="lg:w-72 lg:h-full lg:flex-col lg:justify-start lg:pt-8 lg:border-r lg:border-t-0 h-[76px] bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center px-2 lg:px-5 pb-2 lg:pb-0 pt-2 lg:pt-8 relative z-50 order-last lg:order-first shrink-0 shadow-sm lg:shadow-none">
+        
+        {/* Header Sidebar Desktop */}
+        <div className="hidden lg:flex items-center gap-3 mb-10 px-2 w-full">
+           <img src="https://raw.githubusercontent.com/iswinsyah/Gambar/refs/heads/main/logo%20Tahfidz.jfif" alt="Logo" className="w-10 h-10 rounded-xl shadow-sm object-cover border border-green-100" />
+           <div>
+             <h1 className="text-xl font-black text-green-800 tracking-tight leading-none">At Tahfidz</h1>
+             <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1.5 inline-block">v{APP_VERSION} Premium</span>
+           </div>
+        </div>
 
-        <button onClick={() => setActiveTab('quran')} className={`flex flex-col items-center transition-all ${activeTab === 'quran' || activeTab === 'learn' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <List size={22} fill={activeTab === 'quran' || activeTab === 'learn' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Daftar Surah</span>
+        <button onClick={() => setActiveTab('home')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'home' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
+          <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
+          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Sosial</span>
         </button>
-        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center transition-all ${activeTab === 'profile' ? 'text-green-700 scale-110 drop-shadow-sm' : 'text-green-400 hover:text-green-500'}`}>
-          <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} />
-          <span className="text-[9px] font-black mt-1 uppercase tracking-tighter">Profil</span>
+        <button onClick={() => setActiveTab('tajwid')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'tajwid' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
+          <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
+          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Tajwid</span>
         </button>
-      </div>
-
-      {/* iPhone Dynamic Island */}
-      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-gray-900 rounded-3xl z-[100] flex items-center justify-center">
-         <div className="w-12 h-1 bg-gray-800 rounded-full mr-12"></div>
-         <div className="w-3 h-3 bg-gray-800 rounded-full"></div>
-      </div>
-
-      {/* App Version for Debugging */}
-      <div className="absolute bottom-0 right-2 text-[8px] text-gray-300 font-mono">
-        v{APP_VERSION}
+        <button onClick={() => setActiveTab('level')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'level' || activeTab === 'tilawah' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
+          <Star size={22} fill={activeTab === 'level' || activeTab === 'tilawah' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
+          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Level</span>
+        </button>
+        <button onClick={() => setActiveTab('quran')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'quran' || activeTab === 'learn' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
+          <List size={22} fill={activeTab === 'quran' || activeTab === 'learn' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
+          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Al-Qur'an</span>
+        </button>
+        <button onClick={() => setActiveTab('profile')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'profile' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
+          <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
+          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Profil</span>
+        </button>
       </div>
     </div>
   )
