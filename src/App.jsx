@@ -693,7 +693,7 @@ function App() {
             <button onClick={handleShareApp} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 p-4 rounded-2xl shadow-lg shadow-blue-200 text-white flex items-center justify-between group active:scale-95 transition-all overflow-hidden relative">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
               <div className="text-left relative z-10">
-                <h3 className="font-black text-lg flex items-center gap-2"><Share2 size={18} className="animate-bounce" /> Ajak Teman Pakai AI</h3>
+                <h3 className="font-black text-lg flex items-center gap-2"><Share2 size={18} className="animate-bounce" /> Ajak Teman</h3>
                 <p className="text-[10px] text-blue-50 mt-1 opacity-90 font-medium leading-relaxed">Bagikan ke grup WA. Raih pahala jariyah dari setiap huruf yang mereka baca.</p>
               </div>
               <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors relative z-10 shrink-0">
