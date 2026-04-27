@@ -99,12 +99,12 @@ export default function LearnTab({
                     <p 
                       className="text-[24px] sm:text-[32px] md:text-[38px] font-serif text-black text-justify" 
                       style={{ 
-                        textJustify: 'inter-word', wordSpacing: '4px', lineHeight: '2.2em', height: 'calc(15 * 2.2em)', columnWidth: '100vw', columnGap: '3rem' 
+                        textJustify: 'inter-word', wordSpacing: '4px', lineHeight: '2.2em', height: 'calc(15 * 2.2em + 0.2em)', columnWidth: '100vw', columnGap: '3rem', columnFill: 'auto', orphans: 2, widows: 2 
                       }}
                     >
                       {displayedText.map(item => (
-                        <span key={item.id} onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)} className={`cursor-pointer transition-all duration-300 p-1 rounded-lg ${playingAyah === item.id ? 'bg-[#c3a45a]/40 text-[#684c12] shadow-sm ring-2 ring-[#c3a45a]/50' : 'hover:bg-black/5'}`}>
-                          {item.arabic} <span className="text-[#a48032] font-sans text-xl sm:text-2xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
+                        <span key={item.id} onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)} className={`cursor-pointer transition-all duration-300 p-1 rounded-lg break-words ${playingAyah === item.id ? 'bg-[#c3a45a]/40 text-[#684c12] shadow-sm ring-2 ring-[#c3a45a]/50' : 'hover:bg-black/5'}`}>
+                          {item.arabic} <span className="text-[#a48032] font-sans text-xl sm:text-2xl mx-1 select-none inline-block">﴿{item.ayahNumber || item.id}﴾</span>
                         </span>
                       ))}
                     </p>
