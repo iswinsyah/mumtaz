@@ -837,12 +837,8 @@ function App() {
               </p>
             </div>
 
-            <button 
-              onClick={() => setActiveTab('setor')}
-              className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"
-            >
-              <Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}
-            </button>
+            {/* Spacer agar tombol melayang tidak menutupi konten terakhir */}
+            <div className="h-16"></div>
           </div>
         );
       }

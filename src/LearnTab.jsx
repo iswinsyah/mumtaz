@@ -135,6 +135,9 @@ export default function LearnTab({
         <p className="text-xs text-blue-700 leading-relaxed"><b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>10 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.</p>
       </div>
 
+      {/* Spacer agar tombol melayang tidak menutupi teks terakhir */}
+      <div className="h-16"></div>
+
     </div>
   );
 }
