@@ -1394,6 +1394,17 @@ function App() {
          </div>
       </div>
 
+      {/* Tombol Melayang Lanjut Setoran (Dipindahkan ke Root agar 100% melayang bebas scroll) */}
+      {activeTab === 'learn' && !isLoadingLearnData && (
+        <div className="absolute bottom-24 lg:bottom-8 left-0 lg:left-72 right-0 flex justify-center z-[60] pointer-events-none px-4 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="w-full max-w-md lg:max-w-2xl pointer-events-auto">
+            <button onClick={() => setActiveTab('setor')} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-[0_10px_40px_-10px_rgba(22,163,74,0.8)] flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-green-700">
+              <Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Auth Modal (Login / Signup) */}
       <AuthModal 
         showAuthModal={showAuthModal} 
