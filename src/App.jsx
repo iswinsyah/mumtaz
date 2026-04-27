@@ -734,18 +734,25 @@ function App() {
               </div>
 
               {isMushafMode ? (
-                <div className="py-4 px-2" dir="rtl">
-                  <p className="text-[28px] leading-[2.5] font-serif text-gray-800 text-right" style={{ wordSpacing: '2px' }}>
-                    {displayedText.map(item => (
-                      <span 
-                        key={item.id} 
-                        onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)}
-                        className={`cursor-pointer transition-colors p-1 rounded-lg ${playingAyah === item.id ? 'bg-green-100 text-green-800 shadow-sm' : 'hover:bg-gray-50'}`}
-                      >
-                        {item.arabic} <span className="text-green-600 font-sans text-xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
-                      </span>
-                    ))}
-                  </p>
+                <div className="py-6 px-2 sm:px-6 flex justify-center bg-gray-900 rounded-3xl overflow-hidden my-4 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]" dir="rtl">
+                   <div className="bg-[#fdf6e3] w-full max-w-4xl border-[10px] border-double border-[#d4b872] p-5 sm:p-10 rounded-sm shadow-2xl relative flex flex-col justify-between min-h-[60vh]" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")' }}>
+                      <div className="flex justify-between items-center border-b-[3px] border-[#c3a45a] pb-3 mb-6 px-2">
+                         <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest uppercase">{selectedLearnItem?.type === 'juz' ? currentLearnData.surah : 'Surah'}</p>
+                         <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest">{surah}</p>
+                      </div>
+                      <div className="flex-1 flex flex-col justify-center">
+                        <p className="text-[28px] sm:text-[36px] md:text-[44px] leading-[2.2] sm:leading-[2.4] font-serif text-black text-justify" style={{ textJustify: 'inter-word', wordSpacing: '4px' }}>
+                          {displayedText.map(item => (
+                            <span key={item.id} onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)} className={`cursor-pointer transition-colors p-1 sm:p-2 rounded-lg ${playingAyah === item.id ? 'bg-[#c3a45a]/30 shadow-sm' : 'hover:bg-black/5'}`}>
+                              {item.arabic} <span className="text-[#a48032] font-sans text-xl sm:text-2xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                      <div className="text-center pt-4 border-t-[3px] border-[#c3a45a] mt-8">
+                         <p className="font-bold text-[#8b6b22] text-[10px] sm:text-xs tracking-widest uppercase">At Tahfidz - Mushaf Hafalan</p>
+                      </div>
+                   </div>
                 </div>
               ) : (
                 <div className="space-y-8 py-2">
@@ -1381,7 +1388,7 @@ function App() {
       
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto bg-gray-50 order-first lg:order-last flex justify-center w-full">
-         <div className="w-full max-w-md lg:max-w-2xl relative bg-white lg:shadow-sm lg:border-x border-gray-100 min-h-full">
+         <div className="w-full lg:max-w-4xl relative bg-white lg:shadow-sm lg:border-x border-gray-100 min-h-full">
            {renderTabContent()}
          </div>
       </div>
@@ -1389,7 +1396,7 @@ function App() {
       {/* Tombol Melayang Lanjut Setoran (Dipindahkan ke Root agar 100% melayang bebas scroll) */}
       {activeTab === 'learn' && !isLoadingLearnData && (
         <div className="absolute bottom-24 lg:bottom-8 left-0 lg:left-72 right-0 flex justify-center z-[60] pointer-events-none px-4 animate-in slide-in-from-bottom-5 duration-300">
-          <div className="w-full max-w-md lg:max-w-2xl pointer-events-auto">
+          <div className="w-full lg:max-w-4xl pointer-events-auto">
             <button onClick={() => setActiveTab('setor')} className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-[0_10px_40px_-10px_rgba(22,163,74,0.8)] flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-green-700">
               <Mic size={20} /> {setoranMode === 'tahfidz' ? 'Lanjut ke Setoran Hafalan' : 'Lanjut ke Tes Bacaan (Tahsin)'}
             </button>
