@@ -725,7 +725,11 @@ function App() {
                     Mode Terjemah
                   </button>
                   <button 
-                    onClick={() => setIsMushafMode(true)}
+                    onClick={() => {
+                      setIsMushafMode(true);
+                      // Meminta browser HP masuk ke Layar Penuh (menyembunyikan URL Bar)
+                      try { if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); } catch(e){}
+                    }}
                     className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${isMushafMode ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     Mode Mushaf
@@ -733,9 +737,20 @@ function App() {
                 </div>
               </div>
 
-              {isMushafMode ? (
-                <div className="py-6 px-2 sm:px-6 flex justify-center bg-gray-900 rounded-3xl overflow-hidden my-4 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]" dir="rtl">
-                   <div className="bg-[#fdf6e3] w-full max-w-4xl border-[10px] border-double border-[#d4b872] p-5 sm:p-10 rounded-sm shadow-2xl relative flex flex-col justify-between min-h-[60vh]" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")' }}>
+              {isMushafMode && (
+                <div className="fixed inset-0 z-[200] bg-gray-900 overflow-y-auto flex justify-center p-2 sm:p-8 animate-in zoom-in-95 duration-300" dir="rtl">
+                   <button 
+                     onClick={() => {
+                       setIsMushafMode(false);
+                       // Keluar dari Layar Penuh browser
+                       try { if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}
+                     }} 
+                     className="fixed top-6 left-6 z-[210] bg-black/50 hover:bg-black/70 p-3 rounded-full text-white backdrop-blur-md transition-all shadow-lg"
+                     title="Tutup Mode Mushaf"
+                   >
+                      <X size={24} />
+                   </button>
+                   <div className="bg-[#fdf6e3] w-full max-w-5xl border-[10px] border-double border-[#d4b872] p-5 sm:p-12 rounded-sm shadow-2xl relative flex flex-col min-h-max my-auto" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")' }}>
                       <div className="flex justify-between items-center border-b-[3px] border-[#c3a45a] pb-3 mb-6 px-2">
                          <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest uppercase">{selectedLearnItem?.type === 'juz' ? currentLearnData.surah : 'Surah'}</p>
                          <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest">{surah}</p>
@@ -754,7 +769,9 @@ function App() {
                       </div>
                    </div>
                 </div>
-              ) : (
+              )}
+              
+              {!isMushafMode && (
                 <div className="space-y-8 py-2">
                   {displayedText.map(item => (
                     <div 
