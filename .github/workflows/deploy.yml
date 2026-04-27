@@ -1,38 +1,38 @@
 name: Deploy to Hostinger
 
 on:
-  push: # Pemicu workflow
-    branches: [ main ] # Hanya berjalan saat ada push ke branch 'main'
-  workflow_dispatch: # Memungkinkan trigger manual dari halaman Actions
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
-  deploy:
+  build-and-deploy:
+    name: 🎉 Build & Deploy
     runs-on: ubuntu-latest
+    
     steps:
-      - name: 1. Checkout Repository
-        uses: actions/checkout@v2
+      - name: 🚚 Mengambil kode terbaru
+        uses: actions/checkout@v4
 
-      - name: 2. Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Menggunakan Node.js versi 22
+          node-version: '20'
 
-      - name: 3. Install Dependencies & Build Application
-        run: |
-          npm install
-          npm run build
+      - name: 📦 Install Dependencies
+        run: npm install
 
-      - name: 4. Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      - name: 🚀 Build Project (Vite)
+        run: npm run build
+        
+      - name: 📂 Pindahkan folder API (PHP) ke dist
+        run: cp -r api dist/api || true
+
+      - name: 🌐 Upload ke Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # Direktori sumber di runner GitHub (hasil build Vite)
           local-dir: ./dist/
-          # Direktori tujuan di server Hostinger (Taruh di sini saja, karena FTP sudah di dalam public_html)
-          server-dir: ./
-          # BUKA KUNCI CACHE FTP: Paksa robot upload ulang semuanya dari nol
-          state-name: .sync-state-v2.json
-          # Perpanjang waktu tunggu (2 menit) jika server Hostinger lambat merespon
-          timeout: 120000
