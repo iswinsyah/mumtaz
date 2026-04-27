@@ -17,6 +17,9 @@ import LevelTab from './LevelTab';
 import ProfileTab from './ProfileTab';
 import RapotTab from './RapotTab';
 import AdminTab from './AdminTab';
+import QuranTab from './QuranTab';
+import LearnTab from './LearnTab';
+import SetorTab from './SetorTab';
 
 const MOCK_QURAN = {
   surah: "Al-Mulk",
