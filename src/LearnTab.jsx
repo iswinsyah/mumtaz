@@ -90,17 +90,29 @@ export default function LearnTab({
                    <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest uppercase">{selectedLearnItem?.type === 'juz' ? currentLearnData.surah : 'Surah'}</p>
                    <p className="font-bold text-[#8b6b22] text-xs sm:text-base tracking-widest">{surah}</p>
                 </div>
-                <div className="flex-1 flex flex-col justify-center">
-                  <p className="text-[28px] sm:text-[36px] md:text-[44px] leading-[2.2] sm:leading-[2.4] font-serif text-black text-justify" style={{ textJustify: 'inter-word', wordSpacing: '4px' }}>
-                    {displayedText.map(item => (
-                      <span key={item.id} onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)} className={`cursor-pointer transition-colors p-1 sm:p-2 rounded-lg ${playingAyah === item.id ? 'bg-[#c3a45a]/30 shadow-sm' : 'hover:bg-black/5'}`}>
-                        {item.arabic} <span className="text-[#a48032] font-sans text-xl sm:text-2xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
-                      </span>
-                    ))}
-                  </p>
+                <div className="flex-1 flex flex-col justify-center relative w-full group/mushaf">
+                  {/* Tombol Navigasi Halaman */}
+                  <button onClick={() => { const el = document.getElementById('mushaf-scroll'); if(el) el.scrollBy({ left: -el.clientWidth, behavior: 'smooth' }) }} className="absolute -left-2 sm:-left-8 top-1/2 -translate-y-1/2 z-10 bg-[#c3a45a]/20 hover:bg-[#c3a45a]/40 p-2 sm:p-3 rounded-full text-[#8b6b22] backdrop-blur-sm opacity-0 group-hover/mushaf:opacity-100 transition-opacity" title="Halaman Selanjutnya"><ChevronRight size={28} className="rotate-180"/></button>
+                  <button onClick={() => { const el = document.getElementById('mushaf-scroll'); if(el) el.scrollBy({ left: el.clientWidth, behavior: 'smooth' }) }} className="absolute -right-2 sm:-right-8 top-1/2 -translate-y-1/2 z-10 bg-[#c3a45a]/20 hover:bg-[#c3a45a]/40 p-2 sm:p-3 rounded-full text-[#8b6b22] backdrop-blur-sm opacity-0 group-hover/mushaf:opacity-100 transition-opacity" title="Halaman Sebelumnya"><ChevronRight size={28}/></button>
+                  
+                  <div id="mushaf-scroll" className="overflow-x-auto overflow-y-hidden w-full scroll-smooth px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" dir="rtl">
+                    <p 
+                      className="text-[24px] sm:text-[32px] md:text-[38px] font-serif text-black text-justify" 
+                      style={{ 
+                        textJustify: 'inter-word', wordSpacing: '4px', lineHeight: '2.2em', height: 'calc(15 * 2.2em)', columnWidth: '100vw', columnGap: '3rem' 
+                      }}
+                    >
+                      {displayedText.map(item => (
+                        <span key={item.id} onClick={() => handlePlayAyah(item.surahNumber || surahNumber, item.ayahNumber || item.id, item.id)} className={`cursor-pointer transition-all duration-300 p-1 rounded-lg ${playingAyah === item.id ? 'bg-[#c3a45a]/40 text-[#684c12] shadow-sm ring-2 ring-[#c3a45a]/50' : 'hover:bg-black/5'}`}>
+                          {item.arabic} <span className="text-[#a48032] font-sans text-xl sm:text-2xl mx-1 select-none">﴿{item.ayahNumber || item.id}﴾</span>
+                        </span>
+                      ))}
+                    </p>
+                  </div>
                 </div>
                 <div className="text-center pt-4 border-t-[3px] border-[#c3a45a] mt-8">
                    <p className="font-bold text-[#8b6b22] text-[10px] sm:text-xs tracking-widest uppercase">At Tahfidz - Mushaf Hafalan</p>
+                   <p className="text-[#a48032] text-[9px] sm:text-[10px] mt-1.5 animate-pulse">💡 Tip: Sentuh ayat mana saja untuk memutar lantunan audio</p>
                 </div>
              </div>
           </div>
