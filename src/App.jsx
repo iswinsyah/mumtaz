@@ -110,6 +110,8 @@ function App() {
   const [paymentMethod, setPaymentMethod] = useState('qris');
   const [iqraSteps, setIqraSteps] = useState([]); // State untuk memecah kata step-by-step
   const [currentIqraStep, setCurrentIqraStep] = useState(0); // State penunjuk step aktif
+  const [targetData, setTargetData] = useState({ ayatPerHari: 5, juzTarget: 30, targetDate: '2026-12-24' }); // State Target Belajar
+  const [showTargetModal, setShowTargetModal] = useState(false); // State Modal Edit Target
   const playlistRef = useRef([]); // Ref untuk menyimpan daftar putar
 
   // --- STATE OTENTIKASI & LIMITASI ---
@@ -444,8 +446,8 @@ function App() {
       
       // Set rentang ayat bawaan ke seluruh isi surah tersebut
       setAyahStart(1);
-      // Default saat baru dipilih: maksimal 5 ayat pertama saja
-      setAyahEnd(Math.min(formattedText.length, 5));
+      // Default saat baru dipilih: maksimal 10 ayat pertama saja
+      setAyahEnd(Math.min(formattedText.length, 10));
     } catch (err) {
       console.error("Error Detail:", err);
       alert("Gagal mengambil data surah dari server utama maupun cadangan. Coba lagi nanti.");
@@ -492,7 +494,7 @@ function App() {
       });
       
       setAyahStart(1);
-      setAyahEnd(Math.min(formattedText.length, 5));
+      setAyahEnd(Math.min(formattedText.length, 10));
     } catch (err) {
       console.error("Error Detail:", err);
       alert("Gagal mengambil data Juz. Coba lagi nanti.");
@@ -936,12 +938,12 @@ function App() {
                         if (val > verses) val = verses;
                         setAyahStart(val);
                         
-                        // Pastikan batas maksimal tetap 5 ayat
+                        // Pastikan batas maksimal tetap 10 ayat
                         let currentEnd = Number(ayahEnd);
                         if (currentEnd < val) setAyahEnd(val);
-                        else if (currentEnd - val >= 5) {
-                          setAyahEnd(val + 4);
-                          alert("Maksimal setoran dibatasi 5 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
+                        else if (currentEnd - val >= 10) {
+                          setAyahEnd(val + 9);
+                          alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
                         }
                       }}
                       className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
@@ -956,10 +958,10 @@ function App() {
                         if (val > verses || isNaN(val)) val = verses;
                         if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
                         
-                        // Batasi agar tidak melampaui 5 ayat
-                        if (val - Number(ayahStart) >= 5) {
-                          val = Number(ayahStart) + 4;
-                          alert("Maksimal setoran dibatasi 5 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
+                        // Batasi agar tidak melampaui 10 ayat
+                        if (val - Number(ayahStart) >= 10) {
+                          val = Number(ayahStart) + 9;
+                          alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
                         }
                         setAyahEnd(val);
                       }}
@@ -1021,7 +1023,7 @@ function App() {
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3">
               <AlertCircle className="text-blue-600 shrink-0" />
               <p className="text-xs text-blue-700 leading-relaxed">
-                <b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>5 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.
+                <b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>10 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.
               </p>
             </div>
 
@@ -1557,6 +1559,49 @@ function App() {
                 <div className="bg-white p-3 rounded-2xl border border-gray-100">
                    <p className="text-xl font-black text-green-700">2</p>
                    <p className="text-[10px] font-bold text-gray-400 uppercase">Juz Mutqin</p>
+                </div>
+             </div>
+
+             {/* Capaian Target Belajar */}
+             <div className="mt-8 text-left space-y-3">
+                <div className="flex justify-between items-end px-1">
+                  <h3 className="font-bold text-gray-800">Capaian Target</h3>
+                  <span className="text-[10px] text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded-full flex items-center gap-1"><Award size={10}/> On Track</span>
+                </div>
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3 relative overflow-hidden">
+                   <div className="flex justify-between items-center relative z-10">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-black text-lg shadow-inner">{targetData.juzTarget}</div>
+                         <div>
+                           <p className="font-bold text-gray-800 text-sm">Hafalan Juz {targetData.juzTarget}</p>
+                           <p className="text-[10px] text-gray-500 font-medium mt-0.5">Tersisa 12 Surah pendek lagi</p>
+                         </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-xl font-black text-green-600">65%</p>
+                      </div>
+                   </div>
+                   <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner relative z-10">
+                      <div className="bg-gradient-to-r from-green-400 to-green-600 h-2.5 rounded-full relative transition-all duration-1000" style={{ width: '65%' }}></div>
+                   </div>
+                </div>
+             </div>
+
+             {/* Perencanaan Target Belajar */}
+             <div className="mt-4 text-left space-y-3">
+                <div className="flex justify-between items-end px-1">
+                  <h3 className="font-bold text-gray-800">Perencanaan Belajar</h3>
+                </div>
+                <div onClick={() => setShowTargetModal(true)} className="bg-gradient-to-br from-green-700 to-green-900 p-5 rounded-2xl shadow-lg shadow-green-200/50 text-white flex justify-between items-center relative overflow-hidden group cursor-pointer active:scale-95 transition-all">
+                   <div className="relative z-10 space-y-1.5">
+                      <p className="text-[10px] text-green-200 font-bold uppercase tracking-widest flex items-center gap-1.5"><BookOpen size={12} /> Target Harian Saya</p>
+                      <p className="font-black text-xl">{targetData.ayatPerHari} Ayat / Hari</p>
+                      <p className="text-xs text-green-100 font-medium">Estimasi Khatam Juz {targetData.juzTarget}: <b className="text-yellow-400">{new Date(targetData.targetDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</b></p>
+                   </div>
+                   <div className="relative z-10 bg-white/20 p-2.5 rounded-xl group-hover:bg-white/30 transition-colors shadow-sm">
+                      <Settings size={20} className="text-white" />
+                   </div>
+                   <Book className="absolute -right-6 -bottom-6 opacity-10 rotate-12" size={110} />
                 </div>
              </div>
           </div>
@@ -2225,6 +2270,49 @@ function App() {
              <div className="pt-2">
                 <a href="https://wa.me/6281234567890?text=Assalamu'alaikum,%20saya%20ingin%20konfirmasi%20transfer%20infaq/wakaf%20dari%20Aplikasi%20At%20Tahfidz." target="_blank" rel="noreferrer" className="w-full bg-green-600 text-white py-4 rounded-xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-green-700 active:scale-95 transition-all"><MessageCircle size={18} /> Konfirmasi Transfer via WA</a>
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pengaturan Target Belajar */}
+      {showTargetModal && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[160] flex items-end justify-center animate-in fade-in duration-300">
+          <div className="bg-white w-full rounded-t-[2.5rem] p-6 pb-10 space-y-4 animate-in slide-in-from-bottom duration-500 shadow-2xl relative">
+             <div className="flex justify-center mb-2">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+             </div>
+             <button onClick={() => setShowTargetModal(false)} className="absolute top-6 right-6 bg-gray-50 p-2 rounded-full text-gray-400 hover:text-gray-600"><X size={20} /></button>
+             
+             <div>
+               <h3 className="text-xl font-black text-gray-800">Atur Target Belajar</h3>
+               <p className="text-xs text-gray-500 mt-1">Sesuaikan target hafalan harian agar sistem dapat memantau progres Anda secara otomatis.</p>
+             </div>
+             
+             <form onSubmit={(e) => {
+                 e.preventDefault();
+                 const fd = new FormData(e.target);
+                 setTargetData({ ayatPerHari: Number(fd.get('ayatPerHari')), juzTarget: Number(fd.get('juzTarget')), targetDate: fd.get('targetDate') });
+                 setShowTargetModal(false);
+             }} className="space-y-4 pt-2">
+                 <div className="space-y-1">
+                   <label className="text-xs font-bold text-gray-600 ml-1">Target Hafalan / Hari</label>
+                   <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2">
+                     <input name="ayatPerHari" type="number" min="1" max="100" defaultValue={targetData.ayatPerHari} required className="w-full bg-transparent text-lg font-bold outline-none text-green-700" />
+                     <span className="text-sm font-bold text-gray-400">Ayat</span>
+                   </div>
+                 </div>
+                 <div className="space-y-1">
+                   <label className="text-xs font-bold text-gray-600 ml-1">Fokus Hafalan Juz</label>
+                   <select name="juzTarget" defaultValue={targetData.juzTarget} required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-green-500 transition-all">
+                     {[...Array(30)].map((_, i) => <option key={i+1} value={i+1}>Juz {i+1} {i+1 === 30 ? '(Juz Amma)' : ''}</option>)}
+                   </select>
+                 </div>
+                 <div className="space-y-1">
+                   <label className="text-xs font-bold text-gray-600 ml-1">Target Waktu Selesai</label>
+                   <input name="targetDate" type="date" defaultValue={targetData.targetDate} required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-green-500 transition-all" />
+                 </div>
+                 <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">Simpan Target Baru</button>
+             </form>
           </div>
         </div>
       )}
