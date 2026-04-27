@@ -20,7 +20,7 @@ export default function LearnTab({
 
   const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
   const { surah, surahNumber = 1, text, verses = 2 } = currentLearnData;
-  const displayedText = text.filter(item => item.id >= ayahStart && item.id <= ayahEnd);
+  const displayedText = text; // Tampilkan seluruh ayat tanpa dipotong
   playlistRef.current = displayedText;
 
   return (
@@ -51,7 +51,7 @@ export default function LearnTab({
           <div>
             <h2 className="text-2xl font-black text-green-800">{surah}</h2>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-              {selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Target: Ayat ${ayahStart}-${ayahEnd}`}
+              {selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Total: ${verses} Ayat`}
             </p>
           </div>
           <button 
@@ -69,35 +69,6 @@ export default function LearnTab({
             <button onClick={() => setIsMushafMode(true)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${isMushafMode ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Mode Mushaf</button>
           </div>
         </div>
-
-        {(!selectedLearnItem || selectedLearnItem.type === 'surah') && (
-          <div className="flex items-center justify-between bg-green-50/50 p-3 rounded-xl border border-green-100 mb-2">
-            <span className="text-xs font-bold text-green-700 uppercase">Tampilkan Ayat:</span>
-            <div className="flex items-center gap-2">
-              <input type="number" value={ayahStart} onChange={(e) => setAyahStart(e.target.value === '' ? '' : Number(e.target.value))}
-                onBlur={() => {
-                  let val = Number(ayahStart);
-                  if (val < 1 || isNaN(val)) val = 1;
-                  if (val > verses) val = verses;
-                  setAyahStart(val);
-                  let currentEnd = Number(ayahEnd);
-                  if (currentEnd < val) setAyahEnd(val);
-                  else if (currentEnd - val >= 10) { setAyahEnd(val + 9); alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat."); }
-                }} className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
-              />
-              <span className="text-xs text-green-600 font-bold">s/d</span>
-              <input type="number" value={ayahEnd} onChange={(e) => setAyahEnd(e.target.value === '' ? '' : Number(e.target.value))}
-                onBlur={() => {
-                  let val = Number(ayahEnd);
-                  if (val > verses || isNaN(val)) val = verses;
-                  if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
-                  if (val - Number(ayahStart) >= 10) { val = Number(ayahStart) + 9; alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat."); }
-                  setAyahEnd(val);
-                }} className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
-              />
-            </div>
-          </div>
-        )}
 
         {isMushafMode ? (
           <div className="py-4 px-2" dir="rtl">

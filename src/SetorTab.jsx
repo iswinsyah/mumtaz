@@ -6,6 +6,9 @@ export default function SetorTab({
   transcript, selectedLearnItem, ayahStart, ayahEnd, score, aiNote, aiAudio, recordedAudioUrl,
   isSpeakingNote, handlePlayUstadzVoice, selectedUstadz, handleCopyResult, isCopied, getPredicate, MOCK_QURAN
 }) {
+  const currentSetorData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
+  const totalVerses = currentSetorData.verses || 2;
+
   return (
     <div className="flex flex-col h-full bg-white p-6 pb-24">
       {sessionState === 'idle' && (
@@ -23,6 +26,32 @@ export default function SetorTab({
                 ? 'AI akan menyimak hafalanmu (teks disembunyikan). Fokus pada makhraj dan kelancaran.' 
                 : 'AI akan menyimak bacaanmu (teks ditampilkan). Fokus pada makhraj dan tajwid.'}
             </p>
+          </div>
+
+          {/* Pilihan Rentang Ayat untuk Setoran */}
+          <div className="w-full max-w-[300px] bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3 mt-2">
+            <label className="text-xs font-bold text-gray-600">Pilih Rentang Ayat (Maks 10 Ayat)</label>
+            <div className="flex items-center gap-2 justify-center">
+              <input type="number" value={ayahStart} onChange={(e) => setAyahStart(e.target.value === '' ? '' : Number(e.target.value))}
+                onBlur={() => {
+                  let val = Number(ayahStart);
+                  if (val < 1 || isNaN(val)) val = 1;
+                  if (val > totalVerses) val = totalVerses;
+                  setAyahStart(val);
+                  let currentEnd = Number(ayahEnd);
+                  if (currentEnd < val) setAyahEnd(val);
+                  else if (currentEnd - val >= 10) setAyahEnd(val + 9);
+                }} className="w-16 text-center text-sm font-bold text-green-800 bg-gray-50 border border-gray-200 rounded-lg py-2 outline-none focus:border-green-500 transition-all" />
+              <span className="text-xs text-gray-500 font-bold">s/d</span>
+              <input type="number" value={ayahEnd} onChange={(e) => setAyahEnd(e.target.value === '' ? '' : Number(e.target.value))}
+                onBlur={() => {
+                  let val = Number(ayahEnd);
+                  if (val > totalVerses || isNaN(val)) val = totalVerses;
+                  if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
+                  if (val - Number(ayahStart) >= 10) { val = Number(ayahStart) + 9; alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat."); }
+                  setAyahEnd(val);
+                }} className="w-16 text-center text-sm font-bold text-green-800 bg-gray-50 border border-gray-200 rounded-lg py-2 outline-none focus:border-green-500 transition-all" />
+            </div>
           </div>
 
           <div className="flex bg-green-50 p-1.5 rounded-2xl w-full max-w-[300px] border-2 border-green-100 shadow-inner">

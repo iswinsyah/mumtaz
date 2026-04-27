@@ -673,7 +673,7 @@ function App() {
 
         const currentLearnData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
         const { surah, surahNumber = 1, text, verses = 2 } = currentLearnData;
-        const displayedText = text.filter(item => item.id >= ayahStart && item.id <= ayahEnd);
+        const displayedText = text; // Tampilkan seluruh ayat tanpa dipotong
         playlistRef.current = displayedText; // Simpan ke ref agar bisa dibaca saat putar otomatis
 
         return (
@@ -704,7 +704,7 @@ function App() {
                 <div>
                   <h2 className="text-2xl font-black text-green-800">{surah}</h2>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                    {selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Target: Ayat ${ayahStart}-${ayahEnd}`}
+                    {selectedLearnItem?.type === 'juz' ? currentLearnData.ayat_range : `Total: ${verses} Ayat`}
                   </p>
                 </div>
                 <button 
@@ -732,54 +732,6 @@ function App() {
                   </button>
                 </div>
               </div>
-
-              {/* Filter Rentang Ayat (Khusus Mode Surah) */}
-              {(!selectedLearnItem || selectedLearnItem.type === 'surah') && (
-                <div className="flex items-center justify-between bg-green-50/50 p-3 rounded-xl border border-green-100 mb-2">
-                  <span className="text-xs font-bold text-green-700 uppercase">Tampilkan Ayat:</span>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="number" 
-                      value={ayahStart} 
-                      onChange={(e) => setAyahStart(e.target.value === '' ? '' : Number(e.target.value))}
-                      onBlur={() => {
-                        let val = Number(ayahStart);
-                        if (val < 1 || isNaN(val)) val = 1;
-                        if (val > verses) val = verses;
-                        setAyahStart(val);
-                        
-                        // Pastikan batas maksimal tetap 10 ayat
-                        let currentEnd = Number(ayahEnd);
-                        if (currentEnd < val) setAyahEnd(val);
-                        else if (currentEnd - val >= 10) {
-                          setAyahEnd(val + 9);
-                          alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
-                        }
-                      }}
-                      className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
-                    />
-                    <span className="text-xs text-green-600 font-bold">s/d</span>
-                    <input 
-                      type="number" 
-                      value={ayahEnd} 
-                      onChange={(e) => setAyahEnd(e.target.value === '' ? '' : Number(e.target.value))}
-                      onBlur={() => {
-                        let val = Number(ayahEnd);
-                        if (val > verses || isNaN(val)) val = verses;
-                        if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
-                        
-                        // Batasi agar tidak melampaui 10 ayat
-                        if (val - Number(ayahStart) >= 10) {
-                          val = Number(ayahStart) + 9;
-                          alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
-                        }
-                        setAyahEnd(val);
-                      }}
-                      className="w-14 text-center text-sm font-bold text-green-800 bg-white border border-green-200 rounded-lg p-1 outline-none focus:border-green-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-              )}
 
               {isMushafMode ? (
                 <div className="py-4 px-2" dir="rtl">
@@ -1191,7 +1143,10 @@ function App() {
       case 'admin':
         return <AdminTab currentUser={currentUser} setActiveTab={setActiveTab} adminUsers={adminUsers} isLoadingAdmin={isLoadingAdmin} />;
 
-      case 'setor':
+      case 'setor': {
+        const currentSetorData = selectedLearnItem ? selectedLearnItem.data : MOCK_QURAN;
+        const totalVerses = currentSetorData.verses || 2;
+
         return (
           <div className="flex flex-col h-full bg-white p-6 pb-24">
             {sessionState === 'idle' && (
@@ -1209,6 +1164,47 @@ function App() {
                       ? 'AI akan menyimak hafalanmu (teks disembunyikan). Fokus pada makhraj dan kelancaran.' 
                       : 'AI akan menyimak bacaanmu (teks ditampilkan). Fokus pada makhraj dan tajwid.'}
                   </p>
+                </div>
+
+                {/* Pilihan Rentang Ayat untuk Setoran */}
+                <div className="w-full max-w-[300px] bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3 mt-2">
+                  <label className="text-xs font-bold text-gray-600">Pilih Rentang Ayat (Maks 10 Ayat)</label>
+                  <div className="flex items-center gap-2 justify-center">
+                    <input 
+                      type="number" 
+                      value={ayahStart} 
+                      onChange={(e) => setAyahStart(e.target.value === '' ? '' : Number(e.target.value))}
+                      onBlur={() => {
+                        let val = Number(ayahStart);
+                        if (val < 1 || isNaN(val)) val = 1;
+                        if (val > totalVerses) val = totalVerses;
+                        setAyahStart(val);
+                        
+                        let currentEnd = Number(ayahEnd);
+                        if (currentEnd < val) setAyahEnd(val);
+                        else if (currentEnd - val >= 10) setAyahEnd(val + 9);
+                      }}
+                      className="w-16 text-center text-sm font-bold text-green-800 bg-gray-50 border border-gray-200 rounded-lg py-2 outline-none focus:border-green-500 transition-all"
+                    />
+                    <span className="text-xs text-gray-500 font-bold">s/d</span>
+                    <input 
+                      type="number" 
+                      value={ayahEnd} 
+                      onChange={(e) => setAyahEnd(e.target.value === '' ? '' : Number(e.target.value))}
+                      onBlur={() => {
+                        let val = Number(ayahEnd);
+                        if (val > totalVerses || isNaN(val)) val = totalVerses;
+                        if (val < Number(ayahStart)) val = Number(ayahStart) || 1;
+                        
+                        if (val - Number(ayahStart) >= 10) {
+                          val = Number(ayahStart) + 9;
+                          alert("Maksimal setoran dibatasi 10 ayat sekaligus agar AI dapat mengoreksi tajwid dengan sangat detail dan akurat.");
+                        }
+                        setAyahEnd(val);
+                      }}
+                      className="w-16 text-center text-sm font-bold text-green-800 bg-gray-50 border border-gray-200 rounded-lg py-2 outline-none focus:border-green-500 transition-all"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex bg-green-50 p-1.5 rounded-2xl w-full max-w-[300px] border-2 border-green-100 shadow-inner">
@@ -1287,8 +1283,7 @@ function App() {
                   )}
                   <p className="text-xl font-bold tracking-tight">AI Sedang Menyimak...</p>
                   <p className="text-xs text-gray-400">
-                    Lantunkan {selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}: 
-                    {selectedLearnItem?.type === 'juz' ? selectedLearnItem.data.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`}
+                    Lantunkan {selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah}: Ayat {ayahStart}-{ayahEnd}
                   </p>
                   <p className="text-xs text-green-300 mt-2 truncate max-w-xs px-4 h-4 mx-auto">{transcript || "Menunggu suara..."}</p>
                 </div>
@@ -1374,6 +1369,7 @@ function App() {
             )}
           </div>
         );
+      }
 
       default:
         return <div className="p-4">Pilih tab 'Setor' untuk memulai.</div>;
