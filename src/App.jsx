@@ -36,7 +36,13 @@ const MOCK_QURAN = {
 const APP_VERSION = "1.3.0"; // Versi Premium Voice (WaveNet)
 
 function App() {
-  const [activeTab, setActiveTab] = useState('quran'); // Default langsung ke menu Al-Qur'an
+  const [activeTab, setTabState] = useState(() => {
+    // Deteksi URL saat pertama kali dibuka (contoh: /tajwid)
+    const path = window.location.pathname.split('/')[1];
+    const validTabs = ['quran', 'tajwid', 'level', 'learn', 'setor', 'tilawah'];
+    return validTabs.includes(path) ? path : 'quran';
+  });
+
   const [sessionState, setSessionState] = useState('idle');
   const [score, setScore] = useState(null);
   const [selectedUstadz, setSelectedUstadz] = useState('Hamzah');
@@ -74,6 +80,28 @@ function App() {
   const [showPassword, setShowPassword] = useState(false); // Toggle lihat password
   const [adminUsers, setAdminUsers] = useState([]); // Data user untuk dashboard admin
   const [isLoadingAdmin, setIsLoadingAdmin] = useState(false); // Loading dashboard admin
+
+  // Fungsi custom untuk sinkronisasi URL setiap kali pindah menu
+  const setActiveTab = (tab) => {
+    setTabState(tab);
+    // Ubah URL di browser tanpa me-refresh halaman
+    window.history.pushState({}, '', `/${tab}`);
+  };
+
+  // Tangkap event saat tombol Back/Forward browser ditekan
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.split('/')[1];
+      const validTabs = ['quran', 'tajwid', 'level', 'learn', 'setor', 'tilawah'];
+      if (validTabs.includes(path)) {
+        setTabState(path);
+      } else if (!path) {
+        setTabState('quran');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const { transcript, isListening, startListening, stopListening, error } = useQuranSpeech();
 
