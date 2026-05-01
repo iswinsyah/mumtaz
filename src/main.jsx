@@ -10,7 +10,7 @@ if (!faviconLink) {
   faviconLink.rel = 'icon';
   document.head.appendChild(faviconLink);
 }
-faviconLink.href = 'https://raw.githubusercontent.com/iswinsyah/Gambar/refs/heads/main/logo%20Tahfidz.jfif';
+faviconLink.href = '/logo.png';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

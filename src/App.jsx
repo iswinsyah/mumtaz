@@ -1515,7 +1515,7 @@ function App() {
         
         {/* Header Sidebar Desktop */}
         <div className="hidden lg:flex items-center gap-3 mb-10 px-2 w-full">
-           <img src="/logo.png" alt="Logo Mumtaz App" className="w-10 h-10 rounded-xl shadow-sm object-contain p-1 border border-green-100 bg-white" />
+           <img src="/logo.png" alt="Logo Mumtaz App" className="h-12 w-auto object-contain mix-blend-multiply" />
            <div>
              <h1 className="text-xl font-black text-green-800 tracking-tight leading-none">Mumtaz App</h1>
              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1.5 inline-block">v{APP_VERSION} Premium</span>
