@@ -10,7 +10,8 @@ if (!faviconLink) {
   faviconLink.rel = 'icon';
   document.head.appendChild(faviconLink);
 }
-faviconLink.href = '/logo.png';
+// Paksa browser mendownload ulang favicon dengan menambahkan timestamp
+faviconLink.href = '/logo.png?v=' + new Date().getTime();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
