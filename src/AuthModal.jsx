@@ -5,8 +5,7 @@ export default function AuthModal({
   showAuthModal, setShowAuthModal,
   authMode, setAuthMode,
   showPassword, setShowPassword,
-  setCurrentUser,
-  paymentMethod, setPaymentMethod
+  setCurrentUser
 }) {
   if (!showAuthModal) return null;
 
@@ -112,8 +111,7 @@ export default function AuthModal({
                 email: fd.get('email'),
                 gender: fd.get('gender'),
                 dob: fd.get('dob'),
-                domicile: fd.get('domicile'),
-                infaq: fd.get('infaq')
+                domicile: fd.get('domicile')
               };
 
               try {
@@ -144,24 +142,6 @@ export default function AuthModal({
               <div className="space-y-1"><label className="text-xs font-bold text-gray-600 ml-1">Email</label><input name="email" type="email" required placeholder="Alamat Email Aktif" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" /></div>
               <div className="grid grid-cols-2 gap-3"><div className="space-y-1"><label className="text-xs font-bold text-gray-600 ml-1">Jenis Kelamin</label><select name="gender" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all"><option value="">Pilih...</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div><div className="space-y-1"><label className="text-xs font-bold text-gray-600 ml-1">Tanggal Lahir</label><input name="dob" type="date" required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-green-500 transition-all" /></div></div>
               <div className="space-y-1"><label className="text-xs font-bold text-gray-600 ml-1">Domisili</label><input name="domicile" type="text" required placeholder="Contoh: Jakarta Selatan" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" /></div>
-
-              <div className="space-y-2 pt-2 pb-2">
-                <label className="text-xs font-bold text-green-700 ml-1 flex items-center gap-1"><Lock size={12}/> Pilihan Infaq Akses (Bulanan)</label>
-                <select name="infaq" required className="w-full bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all font-semibold">
-                  <option value="100000">💎 Donatur - Rp 100.000 (Subsidi User Lain)</option>
-                  <option value="50000">🌟 Premium - Rp 50.000 (Bebas Limit)</option>
-                  <option value="25000">⭐ Standar - Rp 25.000 (Bebas Limit)</option>
-                  <option value="15000">✨ Pelajar - Rp 15.000 (Bebas Limit)</option>
-                  <option value="0">⏳ Lewati & Coba Dulu (Bebas Akses)</option>
-                </select>
-              </div>
-
-              <div className="bg-green-50/50 border border-green-100 p-3.5 rounded-xl mt-2 mb-4 shadow-sm">
-                <h4 className="text-[11px] font-black text-green-800 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider"><Heart size={12} className="text-green-600" /> Ketentuan & Alokasi Infaq</h4>
-                <div className="text-[10px] text-gray-600 leading-relaxed space-y-1.5"><p>1. Dengan mendaftar, Anda menyetujui penggunaan wajar aplikasi At Tahfidz.</p><p>2. Seluruh dana infaq yang terkumpul akan dialokasikan murni untuk:</p><ul className="list-disc pl-4 font-bold text-gray-700"><li>Biaya operasional server AI.</li><li>Wakaf Pembangunan Pesantren Villa Quran.</li></ul></div>
-                <label className="flex items-start gap-2 cursor-pointer mt-3 pt-3 border-t border-green-100"><input type="checkbox" required className="mt-0.5 w-3.5 h-3.5 accent-green-600 rounded cursor-pointer" /><span className="text-[10px] font-bold text-gray-700 leading-tight">Saya setuju dengan ketentuan di atas dan berniat infaq lillahi ta'ala.</span></label>
-                <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all mt-3 ${paymentMethod === 'manual' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white'}`}><div className="flex items-center gap-3"><div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center"><Landmark size={20}/></div><div><p className="font-bold text-sm text-gray-800">Transfer Bank Manual</p><p className="text-[10px] text-gray-500">Verifikasi Admin (BSI, Mandiri, BCA)</p></div></div><input type="radio" name="method" value="manual" checked={paymentMethod === 'manual'} onChange={() => setPaymentMethod('manual')} className="w-4 h-4 accent-green-600" /></label>
-              </div>
 
               <button type="submit" className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all mt-4">Daftar & Lanjutkan</button>
               <p className="text-center text-xs text-gray-500 pt-3 pb-4">Sudah punya akun? <button type="button" onClick={() => {setAuthMode('login'); setShowPassword(false);}} className="font-bold text-green-600 underline">Masuk di sini</button></p>

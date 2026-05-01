@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bell, Settings, Share2, ChevronRight, Heart, DollarSign, ExternalLink, Award, MessageCircle } from 'lucide-react';
 
-export default function HomeTab({ setActiveTab, setPaymentStep, setShowPaymentGateway, handleShareApp }) {
+export default function HomeTab({ setActiveTab, handleShareApp }) {
   return (
     <div className="space-y-4 p-4 pb-24 lg:pb-12 lg:pt-8">
       <div className="flex justify-between items-center px-2 lg:mb-2">
@@ -26,31 +26,6 @@ export default function HomeTab({ setActiveTab, setPaymentStep, setShowPaymentGa
           <ChevronRight size={20} />
         </div>
       </button>
-
-      {/* Tombol Wakaf / Payment Gateway (Mencolok) */}
-      <button onClick={() => { setPaymentStep('form'); setShowPaymentGateway(true); }} className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 p-4 rounded-2xl shadow-lg shadow-yellow-200 text-yellow-900 flex items-center justify-between group active:scale-95 transition-all overflow-hidden relative mt-3">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-        <div className="text-left relative z-10">
-          <h3 className="font-black text-lg flex items-center gap-2"><Heart size={18} className="animate-pulse text-red-500" fill="currentColor"/> Wakaf & Infaq</h3>
-          <p className="text-[10px] text-yellow-900/80 mt-1 font-medium leading-relaxed">Dukung operasional AI At Tahfidz. Pembayaran otomatis via Payment Gateway.</p>
-        </div>
-        <div className="bg-white/30 p-2 rounded-xl group-hover:bg-white/40 transition-colors relative z-10 shrink-0">
-          <ChevronRight size={20} />
-        </div>
-      </button>
-
-      {/* Ethical Ads / Sponsorship Banner */}
-      <a href="https://www.bwa.id/" target="_blank" rel="noreferrer" className="block bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all">
-        <div className="relative z-10 space-y-2">
-          <div className="bg-white/20 w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Sponsor Ad</div>
-          <h3 className="font-bold text-lg">Wakaf Al Quran dan Pembinaan</h3>
-          <p className="text-xs text-green-100">Bantu 1000 santri di pedalaman mendapatkan Mushaf baru.</p>
-          <div className="mt-2 w-fit bg-yellow-500 text-green-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2">
-            <DollarSign size={14} /> Beri Kontribusi
-          </div>
-        </div>
-        <Heart className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={120} />
-      </a>
 
       {/* Promosi Web Yayasan / Sekolah */}
       <a href="https://villaquranbaronmalang.com" target="_blank" rel="noreferrer" className="block bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:border-green-300 transition-all group relative overflow-hidden cursor-pointer active:scale-95">

@@ -21,10 +21,8 @@ export default function AdminTab({ currentUser, setActiveTab, adminUsers, isLoad
        </div>
        
        {(() => {
-         const totalInfaq = adminUsers.reduce((sum, user) => sum + Number(user.infaq_choice || 0), 0);
          // Estimasi rata-rata tagihan API/Token per user (Misal Rp 3.000 per user)
          const estimasiToken = adminUsers.length * 3000; 
-         const saldo = totalInfaq - estimasiToken;
 
          return (
            <div className="grid grid-cols-2 gap-3 mb-2">
@@ -36,21 +34,8 @@ export default function AdminTab({ currentUser, setActiveTab, adminUsers, isLoad
                      <span className="text-3xl font-black text-yellow-500">{adminUsers.length}</span>
                    </div>
                  </div>
-                 <div className="text-right space-y-1">
-                   <p className="text-green-300 text-[10px] font-bold uppercase tracking-widest">Dana Infaq Masuk</p>
-                   <p className="text-xl font-black text-green-400">Rp {totalInfaq.toLocaleString('id-ID')}</p>
-                 </div>
               </div>
               
-              <div className="bg-red-50 rounded-2xl p-4 border border-red-100 shadow-sm space-y-1">
-                 <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest leading-tight">Estimasi Tagihan API</p>
-                 <p className="text-lg font-black text-red-600">Rp {estimasiToken.toLocaleString('id-ID')}</p>
-              </div>
-              
-              <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 shadow-sm space-y-1">
-                 <p className="text-blue-500 text-[10px] font-bold uppercase tracking-widest leading-tight">Saldo Bersih Yayasan</p>
-                 <p className="text-lg font-black text-blue-600">Rp {saldo.toLocaleString('id-ID')}</p>
-              </div>
            </div>
          );
        })()}
@@ -62,7 +47,7 @@ export default function AdminTab({ currentUser, setActiveTab, adminUsers, isLoad
           ) : (
             adminUsers.map((u, idx) => (
               <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
-                 <div className="flex justify-between items-start"><div><p className="font-bold text-gray-800">{u.fullname}</p><p className="text-xs text-gray-500">@{u.username} • {u.domicile}</p></div><span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${u.infaq_choice > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{u.infaq_choice > 0 ? 'Premium' : 'Free'}</span></div>
+                 <div className="flex justify-between items-start"><div><p className="font-bold text-gray-800">{u.fullname}</p><p className="text-xs text-gray-500">@{u.username} • {u.domicile}</p></div><span className="text-[10px] font-bold px-2 py-1 rounded uppercase bg-green-100 text-green-700">Member</span></div>
                  <div className="pt-2 border-t border-gray-50 flex justify-between items-center mt-1"><a href={`https://wa.me/${(u.whatsapp || '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="text-xs font-bold text-green-600 flex items-center gap-1 hover:underline"><MessageCircle size={14}/> {u.whatsapp || 'Tidak ada WA'}</a><p className="text-[10px] text-gray-400">{new Date(u.created_at).toLocaleDateString('id-ID')}</p></div>
               </div>
             ))
