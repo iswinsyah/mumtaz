@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-// Komponen Utama Aplikasi At Tahfidz
+// Komponen Utama Aplikasi Mumtaz App
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Home, BookOpen, Mic, Award, User, Heart, Share2, Play, Pause, Search, Download, Copy, Check,
@@ -36,7 +36,7 @@ const MOCK_QURAN = {
 const APP_VERSION = "1.3.0"; // Versi Premium Voice (WaveNet)
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home'); // Kembali ke beranda
+  const [activeTab, setActiveTab] = useState('quran'); // Default langsung ke menu Al-Qur'an
   const [sessionState, setSessionState] = useState('idle');
   const [score, setScore] = useState(null);
   const [showSedekah, setShowSedekah] = useState(false);
@@ -103,8 +103,8 @@ function App() {
   // Handler untuk fitur Share (Viral / Growth)
   const handleShareApp = async () => {
     const shareData = {
-      title: 'At Tahfidz - AI Al-Qur\'an',
-      text: 'Assalamu\'alaikum! Yuk pakai aplikasi At Tahfidz untuk belajar membaca dan setoran hafalan Al-Qur\'an dengan bantuan AI (Ustadz Virtual). Canggih dan praktis lho!',
+      title: 'Mumtaz App - AI Al-Qur\'an',
+      text: 'Assalamu\'alaikum! Yuk pakai aplikasi Mumtaz App untuk belajar membaca dan setoran hafalan Al-Qur\'an dengan bantuan AI (Ustadz Virtual). Canggih dan praktis lho!',
       url: 'https://villaquranbaronmalang.com' // Ganti dengan domain asli aplikasi bos nantinya
     };
     if (navigator.share) {
@@ -336,7 +336,7 @@ function App() {
     const targetSurah = selectedLearnItem ? selectedLearnItem.data.surah : MOCK_QURAN.surah;
     const targetAyah = selectedLearnItem?.type === 'juz' ? selectedLearnItem.data.ayat_range : `Ayat ${ayahStart}-${ayahEnd}`;
     
-    const textToCopy = `📋 *Evaluasi Setoran At Tahfidz*\n📖 Surah: ${targetSurah} (${targetAyah})\n⭐ Nilai: ${score}/100 (${predicate.label})\n\n💡 *Saran Ustadz AI:*\n${noteText}`;
+    const textToCopy = `📋 *Evaluasi Setoran Mumtaz App*\n📖 Surah: ${targetSurah} (${targetAyah})\n⭐ Nilai: ${score}/100 (${predicate.label})\n\n💡 *Saran Ustadz AI:*\n${noteText}`;
     
     navigator.clipboard.writeText(textToCopy).then(() => {
       setIsCopied(true);
@@ -776,7 +776,7 @@ function App() {
                         </div>
                       </div>
                       <div className="text-center pt-4 border-t-[3px] border-[#c3a45a] mt-8">
-                         <p className="font-bold text-[#8b6b22] text-[10px] sm:text-xs tracking-widest uppercase">At Tahfidz - Mushaf Hafalan</p>
+                         <p className="font-bold text-[#8b6b22] text-[10px] sm:text-xs tracking-widest uppercase">Mumtaz App - Mushaf Hafalan</p>
                          <p className="text-[#a48032] text-[9px] sm:text-[10px] mt-1.5 animate-pulse">💡 Tip: Sentuh ayat mana saja untuk memutar lantunan audio</p>
                       </div>
                    </div>
@@ -821,7 +821,7 @@ function App() {
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3">
               <AlertCircle className="text-blue-600 shrink-0" />
               <p className="text-xs text-blue-700 leading-relaxed">
-                <b>Tips At Tahfidz:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>10 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.
+                <b>Tips Mumtaz App:</b> Dengarkan audio Qari sebelum mulai. Maksimal setoran <b>10 ayat</b> per sesi agar evaluasi Ustadz AI sangat akurat.
               </p>
             </div>
 
@@ -1343,7 +1343,7 @@ function App() {
                 </div>
                 <div className="text-center">
                   <p className="font-black text-green-800 uppercase tracking-widest text-xs">Processing</p>
-                  <p className="text-sm text-gray-500">AI At Tahfidz sedang menganalisis hafalan...</p>
+                <p className="text-sm text-gray-500">AI Mumtaz App sedang menganalisis hafalan...</p>
                 </div>
               </div>
             )}
@@ -1583,7 +1583,7 @@ function App() {
                </div>
              </div>
              <div className="pt-2">
-                <a href="https://wa.me/6281234567890?text=Assalamu'alaikum,%20saya%20ingin%20konfirmasi%20transfer%20infaq/wakaf%20dari%20Aplikasi%20At%20Tahfidz." target="_blank" rel="noreferrer" className="w-full bg-green-600 text-white py-4 rounded-xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-green-700 active:scale-95 transition-all"><MessageCircle size={18} /> Konfirmasi Transfer via WA</a>
+                <a href="https://wa.me/6281234567890?text=Assalamu'alaikum,%20saya%20ingin%20konfirmasi%20transfer%20infaq/wakaf%20dari%20Aplikasi%20Mumtaz%20App." target="_blank" rel="noreferrer" className="w-full bg-green-600 text-white py-4 rounded-xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-green-700 active:scale-95 transition-all"><MessageCircle size={18} /> Konfirmasi Transfer via WA</a>
              </div>
           </div>
         </div>
@@ -1639,15 +1639,11 @@ function App() {
         <div className="hidden lg:flex items-center gap-3 mb-10 px-2 w-full">
            <img src="https://raw.githubusercontent.com/iswinsyah/Gambar/refs/heads/main/logo%20Tahfidz.jfif" alt="Logo" className="w-10 h-10 rounded-xl shadow-sm object-cover border border-green-100" />
            <div>
-             <h1 className="text-xl font-black text-green-800 tracking-tight leading-none">At Tahfidz</h1>
+             <h1 className="text-xl font-black text-green-800 tracking-tight leading-none">Mumtaz App</h1>
              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1.5 inline-block">v{APP_VERSION} Premium</span>
            </div>
         </div>
 
-        <button onClick={() => setActiveTab('home')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'home' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
-          <Home size={22} fill={activeTab === 'home' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
-          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Sosial</span>
-        </button>
         <button onClick={() => setActiveTab('tajwid')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'tajwid' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
           <BookOpen size={22} fill={activeTab === 'tajwid' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
           <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Tajwid</span>
@@ -1659,10 +1655,6 @@ function App() {
         <button onClick={() => setActiveTab('quran')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'quran' || activeTab === 'learn' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
           <List size={22} fill={activeTab === 'quran' || activeTab === 'learn' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
           <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Al-Qur'an</span>
-        </button>
-        <button onClick={() => setActiveTab('profile')} className={`flex lg:flex-row flex-col items-center lg:w-full lg:px-4 lg:py-3.5 lg:mb-2 lg:rounded-2xl lg:justify-start transition-all ${activeTab === 'profile' ? 'text-green-700 lg:bg-green-50 scale-110 lg:scale-100 drop-shadow-sm' : 'text-gray-400 hover:text-green-600 lg:hover:bg-gray-50'}`}>
-          <User size={22} fill={activeTab === 'profile' ? "currentColor" : "none"} className="lg:mr-4 shrink-0" />
-          <span className="text-[10px] lg:text-sm font-black lg:font-bold mt-1 lg:mt-0 uppercase lg:capitalize tracking-tighter">Profil</span>
         </button>
       </div>
     </div>

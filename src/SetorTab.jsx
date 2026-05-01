@@ -116,7 +116,7 @@ export default function SetorTab({
           </div>
           <div className="text-center">
             <p className="font-black text-green-800 uppercase tracking-widest text-xs">Processing</p>
-            <p className="text-sm text-gray-500">AI At Tahfidz sedang menganalisis hafalan...</p>
+            <p className="text-sm text-gray-500">AI Mumtaz App sedang menganalisis hafalan...</p>
           </div>
         </div>
       )}
