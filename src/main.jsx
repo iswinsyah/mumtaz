@@ -10,8 +10,7 @@ if (!faviconLink) {
   faviconLink.rel = 'icon';
   document.head.appendChild(faviconLink);
 }
-// Paksa browser mendownload ulang favicon dengan menambahkan timestamp
-faviconLink.href = '/logo.png?v=' + new Date().getTime();
+faviconLink.href = 'https://github.com/iswinsyah/mumtaz/blob/main/Logo.png?raw=true';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

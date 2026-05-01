@@ -6,7 +6,7 @@ export default function HomeTab({ setActiveTab, handleShareApp }) {
     <div className="space-y-4 p-4 pb-24 lg:pb-12 lg:pt-8">
       <div className="flex justify-between items-center px-2 lg:mb-2">
         <div className="flex items-center gap-3 lg:hidden">
-          <img src="/logo.png?v=2" alt="Logo Mumtaz App" className="w-11 h-11 rounded-xl shadow-sm object-cover border border-green-100 bg-white" />
+          <img src="https://github.com/iswinsyah/mumtaz/blob/main/Logo.png?raw=true" alt="Logo Mumtaz App" className="w-11 h-11 rounded-xl shadow-sm object-cover border border-green-100 bg-white" />
           <h1 className="text-2xl font-bold text-green-800">Mumtaz App</h1>
         </div>
         <div className="flex gap-3 ml-auto">
